@@ -3,9 +3,9 @@ from flask import Flask, send_from_directory
 app = Flask(__name__)
 
 
-@app.route('/js/<path:path>')
+@app.route('/dist/<path:path>')
 def send_js(path):
-    return send_from_directory('js', path)
+    return send_from_directory('dist', path)
 
 
 def homepage() -> str:
@@ -15,22 +15,15 @@ def homepage() -> str:
   <head>
     <meta charset="UTF-8" />
     <title>Hello World</title>
-    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/react-beautiful-dnd@10.x/dist/react-beautiful-dnd.js"></script>
-    <!--<script src="./dist/main.js"></script>-->
     <style>
     #root {
         display: flex;
         justify-content: space-between;
     }
     </style>
-    <!-- Don't use this in production: -->
-    <script src="https://unpkg.com/babel-standalone@6.x/babel.min.js"></script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="text/jsx" src="js/list.jsx"></script>
     <!--
       Note: this page is a great way to try React but it's not suitable for production.
       It slowly compiles JSX with Babel in the browser and uses a large development build of React.
@@ -44,6 +37,8 @@ def homepage() -> str:
       You can also use React without JSX, in which case you can remove Babel:
       https://reactjs.org/docs/react-without-jsx.html
     -->
+    <script src="dist/main.js"></script>
+
   </body>
 </html>
 

@@ -1,14 +1,5 @@
-// ReactDOM.render(
-//     <h1>Hello, world!</h1>,
-//     document.getElementById('root')
-// );
-
-// import React1, {Component} from 'react';
-
-const React = window.React;
-const ReactDOM = window.ReactDOM;
-const {DragDropContext, Draggable, Droppable} = window.ReactBeautifulDnd;
-
+import React, {Component} from 'react';
+import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
 
 // fake data generator
 const getItems = (count, offset = 0) =>
@@ -64,7 +55,7 @@ const getListStyle = isDraggingOver => ({
     width: 250
 });
 
-class App extends React.Component {
+export default class DragList extends React.Component {
     state = {
         items: getItems(10),
         available: getItems(5, 104)
@@ -184,6 +175,3 @@ class App extends React.Component {
         );
     }
 }
-
-// Put the things into the DOM!
-ReactDOM.render(<App />, document.getElementById('root'));
