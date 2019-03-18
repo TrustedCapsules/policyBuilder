@@ -16,8 +16,9 @@
     "webpack-dev-server": "^3.2.1"
   },
   "scripts": {
-    "start": "webpack-dev-server --config ./webpack.config.js --mode development",
-    "build": "webpack --mode development"
+    "start": "webpack-dev-server --config ./webpack.config.js --mode development --open",
+    "build": "webpack --mode development",
+    "watch": "webpack --mode development --watch"
   },
   "dependencies": {
     "react": "^16.8.4",

@@ -9,5 +9,10 @@ module.exports = {
         }
       }
     ]
+  },
+	devtool: 'eval-source-map',
+  devServer: {
+    contentBase: './html',
+    publicPath: '/dist'
   }
 };
