@@ -57,7 +57,7 @@ const getListStyle = isDraggingOver => ({
 
 export default class DragList extends React.Component {
     state = {
-        items: getItems(10),
+        items: getItems(3),
         available: getItems(5, 104)
     };
 
@@ -66,12 +66,12 @@ export default class DragList extends React.Component {
      * the IDs of the droppable container to the names of the
      * source arrays stored in the state.
      */
-    id2List = {
+    idToList = {
         droppable: 'items',
         droppable2: 'available'
     };
 
-    getList = id => this.state[this.id2List[id]];
+    getList = id => this.state[this.idToList[id]];
 
     onDragEnd = result => {
         const { source, destination } = result;
@@ -120,6 +120,7 @@ export default class DragList extends React.Component {
                         <div
                             ref={provided.innerRef}
                             style={getListStyle(snapshot.isDraggingOver)}>
+                            Criteria
                             {this.state.items.map((item, index) => (
                                 <Draggable
                                     key={item.id}
@@ -148,6 +149,7 @@ export default class DragList extends React.Component {
                         <div
                             ref={provided.innerRef}
                             style={getListStyle(snapshot.isDraggingOver)}>
+                            Available Criteria
                             {this.state.available.map((item, index) => (
                                 <Draggable
                                     key={item.id}
