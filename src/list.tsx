@@ -1,15 +1,16 @@
-import React, {Component} from 'react';
-import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
+import * as React from "react";
+import {DragDropContext, Draggable, DraggingStyle, Droppable, DropResult, NotDraggingStyle} from 'react-beautiful-dnd';
+import {CSSProperties} from "react";
 
 // fake data generator
-const getItems = (count, offset = 0) =>
-    Array.from({ length: count }, (v, k) => k).map(k => ({
+const getItems = (count: number, offset = 0): Array<ListItem> =>
+    Array.from({length: count}, (v, k) => k).map(k => ({
         id: `item-${k + offset}`,
         content: `item ${k + offset}`
     }));
 
 // a little function to help us with reordering the result
-const reorder = (list, startIndex, endIndex) => {
+const reorder = (list: Array<ListItem>, startIndex: number, endIndex: number) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
@@ -20,23 +21,22 @@ const reorder = (list, startIndex, endIndex) => {
 /**
  * Moves an item from one list to another list.
  */
-const move = (source, destination, droppableSource, droppableDestination) => {
+const move = (source: Array<ListItem>, destination: Array<ListItem>, droppableSource: DroppableItem, droppableDestination: DroppableItem): ListState => {
     const sourceClone = Array.from(source);
     const destClone = Array.from(destination);
     const [removed] = sourceClone.splice(droppableSource.index, 1);
 
     destClone.splice(droppableDestination.index, 0, removed);
 
-    const result = {};
-    result[droppableSource.droppableId] = sourceClone;
-    result[droppableDestination.droppableId] = destClone;
-
-    return result;
+    return {
+        [droppableSource.droppableId]: sourceClone,
+        [droppableDestination.droppableId]: destClone
+    } as ListState;
 };
 
 const grid = 8;
 
-const getItemStyle = (isDragging, draggableStyle) => ({
+const getItemStyle = (isDragging: boolean, draggableStyle: DraggingStyle | NotDraggingStyle): React.CSSProperties => ({
     // some basic styles to make the items look a bit nicer
     userSelect: 'none',
     padding: grid * 2,
@@ -49,14 +49,30 @@ const getItemStyle = (isDragging, draggableStyle) => ({
     ...draggableStyle
 });
 
-const getListStyle = isDraggingOver => ({
+const getListStyle = (isDraggingOver: boolean) => ({
     background: isDraggingOver ? 'lightblue' : 'lightgrey',
     padding: grid,
     width: 250
 });
 
-export default class DragList extends React.Component {
-    state = {
+interface ListItem {
+    id: string
+    content: string
+}
+
+interface ListState {
+    [key: string]: Array<ListItem> //allow indexing with [] operator
+    items: Array<ListItem>
+    available: Array<ListItem>
+}
+
+interface DroppableItem {
+    droppableId: string
+    index: number
+}
+
+export default class DragList extends React.Component<object, ListState> {
+    state: ListState = {
         items: getItems(3),
         available: getItems(5, 104)
     };
@@ -66,15 +82,17 @@ export default class DragList extends React.Component {
      * the IDs of the droppable container to the names of the
      * source arrays stored in the state.
      */
-    idToList = {
+    idToList: { [key: string]: string } = {
         droppable: 'items',
         droppable2: 'available'
     };
 
-    getList = id => this.state[this.idToList[id]];
+    getList = (id: string): Array<ListItem> => {
+        return this.state[this.idToList[id]];
+    };
 
-    onDragEnd = result => {
-        const { source, destination } = result;
+    onDragEnd = (result: DropResult) => {
+        const {source, destination} = result;
 
         // dropped outside the list
         if (!destination) {
@@ -88,12 +106,7 @@ export default class DragList extends React.Component {
                 destination.index
             );
 
-            let state = { items };
-
-            if (source.droppableId === 'droppable2') {
-                state = { available: items };
-            }
-
+            let state: Object = (source.droppableId === 'droppable2') ? {available: items} : {items: items};
             this.setState(state);
         } else {
             const result = move(
