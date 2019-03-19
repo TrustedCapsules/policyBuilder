@@ -1,5 +1,13 @@
 import * as React from "react";
-import {DragDropContext, Draggable, DraggingStyle, Droppable, DropResult, NotDraggingStyle} from 'react-beautiful-dnd';
+import {
+    DragDropContext,
+    Draggable,
+    DraggableLocation,
+    DraggingStyle,
+    Droppable,
+    DropResult,
+    NotDraggingStyle
+} from 'react-beautiful-dnd';
 import {CSSProperties} from "react";
 
 // fake data generator
@@ -21,7 +29,7 @@ const reorder = (list: Array<ListItem>, startIndex: number, endIndex: number) =>
 /**
  * Moves an item from one list to another list.
  */
-const move = (source: Array<ListItem>, destination: Array<ListItem>, droppableSource: DroppableItem, droppableDestination: DroppableItem): ListState => {
+const move = (source: Array<ListItem>, destination: Array<ListItem>, droppableSource: DraggableLocation, droppableDestination: DraggableLocation): ListState => {
     const sourceClone = Array.from(source);
     const destClone = Array.from(destination);
     const [removed] = sourceClone.splice(droppableSource.index, 1);
@@ -64,11 +72,6 @@ interface ListState {
     [key: string]: Array<ListItem> //allow indexing with [] operator
     items: Array<ListItem>
     available: Array<ListItem>
-}
-
-interface DroppableItem {
-    droppableId: string
-    index: number
 }
 
 export default class DragList extends React.Component<object, ListState> {
