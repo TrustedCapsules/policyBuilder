@@ -6,6 +6,8 @@
   "author": "Eric Semeniuc <eric.semeniuc@alumni.ubc.ca>",
   "license": "MIT",
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.8.1",
+    "@fortawesome/react-fontawesome": "^0.1.4",
     "awesome-typescript-loader": "^5.2.1",
     "source-map-loader": "^0.2.4",
     "typescript": "^3.3.3333",
@@ -19,11 +21,16 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.17",
+    "@fortawesome/free-solid-svg-icons": "^5.8.1",
     "@types/react": "^16.8.8",
     "@types/react-beautiful-dnd": "^10.1.0",
     "@types/react-dom": "^16.8.2",
+    "@types/superagent": "^4.1.1",
     "react": "^16.8.4",
     "react-beautiful-dnd": "^10.1.0",
-    "react-dom": "^16.8.4"
+    "react-dom": "^16.8.4",
+    "react-dropzone": "^10.1.0",
+    "superagent": "^5.0.2"
   }
 }

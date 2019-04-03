@@ -1,5 +1,5 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import DragList from './list'
+import App from './App'
 // Put the things into the DOM!
-ReactDOM.render(<DragList />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('root'));
