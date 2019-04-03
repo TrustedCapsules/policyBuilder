@@ -2,17 +2,10 @@ import DragList from './DragList'
 import * as React from "react";
 import {useDropzone} from 'react-dropzone'
 import * as superagent from "superagent";
-import {library} from '@fortawesome/fontawesome-svg-core'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faFile} from '@fortawesome/free-solid-svg-icons'
-
+import {faFile, faDownload} from '@fortawesome/free-solid-svg-icons'
 
 export default class App extends React.Component<{}, {}> {
-    constructor(props: any) {
-        super(props);
-        library.add(faFile);
-    }
-
     render() {
         return <>
             <DragList/>
@@ -37,11 +30,14 @@ function MyDropzone() {
             <input {...getInputProps()} />
             {
                 isDragActive ?
-                    <div>
+                    <>
                         <p>Drop the files here ...</p>
-                        <FontAwesomeIcon icon="file"/>
-                    </div> :
-                    <p>Drag 'n' drop some files here, or click to select files</p>
+                        <FontAwesomeIcon icon={faFile} size="2x"/>
+                    </> :
+                    <>
+                        <p>Drag 'n' drop some files here, or click to select files</p>
+                        <FontAwesomeIcon icon={faDownload} size="2x"/>
+                    </>
             }
         </div>
     )

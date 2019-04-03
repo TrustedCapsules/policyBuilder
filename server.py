@@ -1,4 +1,4 @@
-from flask import Flask, request, send_from_directory, send_file
+from flask import Flask, jsonify, request, send_from_directory, send_file
 from http import HTTPStatus
 from werkzeug.utils import secure_filename
 import os
@@ -23,20 +23,20 @@ def allowed_file(filename):
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            return 'No file part', HTTPStatus.BAD_REQUEST
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            return 'No selected file', HTTPStatus.BAD_REQUEST
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return 'success', 200
+    success_count = 0
+    for name_field, file in request.files.items():
+        print(file)
+        if file.filename == '' or not allowed_file(file.filename):
+            continue
 
+        filename = secure_filename(file.filename)
+        file.save(os.path.join('uploads/', filename))
+        success_count += 1
+
+    if success_count > 0:
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False}), HTTPStatus.BAD_REQUEST
 
 if __name__ == "__main__":
     app.run()
