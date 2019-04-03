@@ -74,7 +74,7 @@ interface ListState {
     available: Array<ListItem>
 }
 
-export default class DragList extends React.Component<object, ListState> {
+export default class DragList extends React.Component<{}, ListState> {
     state: ListState = {
         items: getItems(3),
         available: getItems(5, 104)
