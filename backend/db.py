@@ -3,7 +3,8 @@ import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
 from flask import g
 from backend.server import app
-
+from sqlalchemy.orm import sessionmaker
+SessionFactory = sessionmaker()
 Base = db.ext.declarative.declarative_base()
 DATABASE = 'db.sqlite'
 
@@ -51,6 +52,10 @@ def init_db(persist: bool = False) -> None:
     Base.metadata.create_all(engine)
 
 
+def load_sample_data()->None:
+
+
+
 def get_db():
     db = g._database
     if db is None:
@@ -66,6 +71,7 @@ def close_connection(exception):
 
 
 init_db()
+load_sample_data()
 #
 # a = Device()
 # print(a)
