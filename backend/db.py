@@ -2,7 +2,7 @@ import os
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
 from flask import g
-from server import app
+from backend.server import app
 
 Base = db.ext.declarative.declarative_base()
 DATABASE = 'db.sqlite'
