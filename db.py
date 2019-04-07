@@ -1,30 +1,71 @@
+import os
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
+from flask import g
+from server import app
 
 Base = db.ext.declarative.declarative_base()
+DATABASE = 'db.sqlite'
 
 
 class Device(Base):
-    pubkey = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String)
-    nonce = db.Column(db.String)
-    is_auth = db.Column(db.Boolean)
-
     __tablename__ = 'devices'
+    pubkey = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String, index=True, nullable=False)
+    nonce = db.Column(db.String, nullable=False)
+    is_auth = db.Column(db.Boolean, nullable=False)
 
     def __repr__(self):
         return "<Device(pubkey='%s', email='%s', nonce='%s', is_auth=%s)>" % (
             self.pubkey, self.email, self.nonce, self.is_auth)
 
 
-engine = db.create_engine('sqlite:///db.sqlite')
-if not engine.dialect.has_table(engine, Device.__tablename__):  # If table don't exist, Create.
-    Base.metadata.create_all(engine)
-connection = engine.connect()
-metadata = db.MetaData()
-census = db.Table(Device.__tablename__, metadata, autoload=True, autoload_with=engine)
+class Capsule(Base):
+    __tablename__ = 'capsules'
+    uuid = db.Column(db.String, primary_key=True)
+    decrypt_key = db.Column(db.String, unique=True)
 
-print(census.columns.keys())
+    def __repr__(self):
+        return "<Capsule(uuid='%s', decrypt_key='%s')>" % (
+            self.uuid, self.decrypt_key)
+
+
+# can have multiple emails per capsule
+class CapsuleRecipient(Base):
+    __tablename__ = 'capsule_recipients'
+    __table_args__ = (db.PrimaryKeyConstraint('uuid', 'email', name='capsule_recipients_pk'),)
+    uuid = db.Column(db.String, db.ForeignKey(Capsule.uuid), index=True, nullable=False)
+    email = db.Column(db.String)
+
+    def __repr__(self):
+        return "<CapsuleRecipient(uuid='%s', email='%s')>" % (
+            self.uuid, self.email)
+
+
+def init_db(persist: bool = False) -> None:
+    if not persist and os.path.isfile(DATABASE):
+        os.unlink(DATABASE)
+    engine = db.create_engine('sqlite:///' + DATABASE)
+    # for tablename in [Capsule.__tablename__, CapsuleRecipient.__tablename__, Device.__tablename__]:
+    #     if not engine.dialect.has_table(engine, Device.__tablename__):  # If table don't exist, Create.
+    Base.metadata.create_all(engine)
+
+
+def get_db():
+    db = g._database
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+    return db
+
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+
+init_db()
 #
 # a = Device()
 # print(a)

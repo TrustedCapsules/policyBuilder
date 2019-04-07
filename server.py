@@ -1,10 +1,9 @@
-from flask import Flask, jsonify, request, send_from_directory, send_file
+from flask import Flask, jsonify, request, send_from_directory, send_file, g
 from http import HTTPStatus
 from werkzeug.utils import secure_filename
 import os
 
 app = Flask(__name__)
-
 
 @app.route('/dist/<path:path>')
 def send_js(path):
