@@ -1,8 +1,10 @@
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
 
+Base = db.ext.declarative.declarative_base()
 
-class Device(db.ext.declarative.declarative_base()):
+
+class Device(Base):
     pubkey = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String)
     nonce = db.Column(db.String)
@@ -15,14 +17,16 @@ class Device(db.ext.declarative.declarative_base()):
             self.pubkey, self.email, self.nonce, self.is_auth)
 
 
-# engine = db.create_engine('sqlite:///db.sqlite')
-# connection = engine.connect()
-# metadata = db.MetaData()
-# census = db.Table('census', metadata, autoload=True, autoload_with=engine)
-#
-# print(census.columns.keys())
+engine = db.create_engine('sqlite:///db.sqlite')
+if not engine.dialect.has_table(engine, Device.__tablename__):  # If table don't exist, Create.
+    Base.metadata.create_all(engine)
+connection = engine.connect()
+metadata = db.MetaData()
+census = db.Table(Device.__tablename__, metadata, autoload=True, autoload_with=engine)
 
-a = Device()
-print(a)
+print(census.columns.keys())
+#
+# a = Device()
+# print(a)
 # import inspect
 # print(inspect.signature(a.__init__))
