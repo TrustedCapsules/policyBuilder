@@ -21,7 +21,8 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() == 'lua'
 
 
-@app.route('/submit', methods=['POST'])
+
+@app.route('/capsule/new', methods=['POST'])
 def submit():
     success_count = 0
     for name_field, file in request.files.items():
@@ -37,6 +38,18 @@ def submit():
         return jsonify({"success": True})
     else:
         return jsonify({"success": False}), HTTPStatus.BAD_REQUEST
+
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    success = True
+    if success:
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False}), HTTPStatus.BAD_REQUEST
+
+
 
 if __name__ == "__main__":
     app.run()
