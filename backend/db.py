@@ -109,9 +109,9 @@ def load_sample_data() -> None:
 
 @app.teardown_appcontext
 def close_connection(exception):
-    db = getattr(g, app.config['DATABASE'], None)
-    if db is not None:
-        db.close()
+    SessionFactory = getattr(app.config, 'SessionFactory', None)
+    if SessionFactory is not None:
+        SessionFactory.close_all_sessions()
 
 
 if __name__ == "__main__":
