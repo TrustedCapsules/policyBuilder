@@ -1,24 +1,16 @@
 import os
-import sqlalchemy as db
+import logging  # for debug
+import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from backend.server import app
 from sqlalchemy.orm import sessionmaker
 
-
-def enable_debug():
-    import logging
-    logging.basicConfig()
-    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
-
-enable_debug()
-
-from sqlalchemy.engine import Engine
-from sqlalchemy import event
+from sqlalchemy.engine import Engine  # for fk
+from sqlalchemy import event  # ditto
 
 
 @event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
+def set_sqlite_pragma(dbapi_connection, connection_record) -> None:
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
@@ -26,15 +18,14 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 # an email can have 1..many devices
 # a capsule can have 1..many capsule recipients
-# a
 
-Base = db.ext.declarative.declarative_base()
+Base = sa.ext.declarative.declarative_base()  # need this to avoid making explicit tables
 
 
 class Email(Base):
     __tablename__ = 'emails'
-    email = db.Column(db.String, primary_key=True)
-    devices = db.orm.relationship('Device')
+    email = sa.Column(sa.String, primary_key=True)
+    devices = sa.orm.relationship('Device')
 
     def __repr__(self):
         return "<Email(email='%s', device='%s')>" % (
@@ -43,10 +34,10 @@ class Email(Base):
 
 class Device(Base):
     __tablename__ = 'devices'
-    pubkey = db.Column(db.String, primary_key=True)
-    email = db.Column(db.String, db.ForeignKey(Email.email), nullable=False)
-    nonce = db.Column(db.String, nullable=False)
-    is_auth = db.Column(db.Boolean, nullable=False)
+    pubkey = sa.Column(sa.String, primary_key=True)
+    email = sa.Column(sa.String, sa.ForeignKey(Email.email), nullable=False)
+    nonce = sa.Column(sa.String, nullable=False)
+    is_auth = sa.Column(sa.Boolean, nullable=False)
 
     def __repr__(self):
         return "<Device(pubkey='%s', email='%s', nonce='%s', is_auth='%s')>" % (
@@ -55,9 +46,9 @@ class Device(Base):
 
 class Capsule(Base):
     __tablename__ = 'capsules'
-    uuid = db.Column(db.String, primary_key=True)
-    decrypt_key = db.Column(db.String, unique=True)
-    recipients = db.orm.relationship('CapsuleRecipient', back_populates='capsule')
+    uuid = sa.Column(sa.String, primary_key=True)
+    decrypt_key = sa.Column(sa.String, unique=True)
+    recipients = sa.orm.relationship('CapsuleRecipient', back_populates='capsule')
 
     def __repr__(self):
         return "<Capsule(uuid='%s', decrypt_key='%s', recipients='%s')>" % (
@@ -66,24 +57,24 @@ class Capsule(Base):
 
 class CapsuleRecipient(Base):
     __tablename__ = 'capsule_recipients'
-    __table_args__ = (db.PrimaryKeyConstraint('uuid', 'email', name='capsule_recipients_pk'),)
-    uuid = db.Column(db.String, db.ForeignKey(Capsule.uuid), index=True, nullable=False)
-    email = db.Column(db.String, db.ForeignKey(Email.email), nullable=False)
-    capsule = db.orm.relationship('Capsule', back_populates='recipients')
+    __table_args__ = (sa.PrimaryKeyConstraint('uuid', 'email', name='capsule_recipients_pk'),)
+    uuid = sa.Column(sa.String, sa.ForeignKey(Capsule.uuid), index=True, nullable=False)
+    email = sa.Column(sa.String, sa.ForeignKey(Email.email), nullable=False)
+    capsule = sa.orm.relationship('Capsule', back_populates='recipients')
 
     def __repr__(self):
         return "<CapsuleRecipient(uuid='%s', email='%s', capsule='%s')>" % (
             self.uuid, self.email, self.capsule)
 
 
-def get_engine():
+def get_engine() -> sa.engine:
     engine = getattr(app.config, 'engine', None)
     if engine is None:
-        engine = app.config['engine'] = db.create_engine('sqlite:///' + app.config['DATABASE'])
+        engine = app.config['engine'] = sa.create_engine('sqlite:///' + app.config['DATABASE'])
     return engine
 
 
-def get_session():
+def get_session() -> sa.orm.session.Session:
     SessionFactory = getattr(app.config, 'SessionFactory', None)
     if SessionFactory is None:
         SessionFactory = app.config['SessionFactory'] = sessionmaker()
@@ -91,11 +82,14 @@ def get_session():
     return SessionFactory()
 
 
-def init_db(persist: bool = False) -> None:
-    if not persist and os.path.isfile(app.config['DATABASE']):
-        os.unlink(app.config['DATABASE'])
-    session = get_session()
-    Base.metadata.create_all(get_engine())
+def init_db() -> None:
+    if app.testing:
+        logging.basicConfig()
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        if os.path.isfile(app.config['DATABASE']):
+            os.unlink(app.config['DATABASE'])
+    get_session()
+    Base.metadata.create_all(get_engine())  # generate the tables
 
 
 def load_sample_data() -> None:
@@ -128,4 +122,3 @@ if __name__ == "__main__":
     print(our_user)
 
 # session.query.join(Address, User.id == Address.user_id)
-
