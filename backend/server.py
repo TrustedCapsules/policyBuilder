@@ -4,6 +4,8 @@ from werkzeug.utils import secure_filename
 import os
 
 app = Flask(__name__)
+app.config['DATABASE'] = 'db.sqlite'
+
 
 @app.route('/dist/<path:path>')
 def send_js(path):
@@ -18,7 +20,6 @@ def home():
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() == 'lua'
-
 
 
 @app.route('/capsule/new', methods=['POST'])
@@ -39,7 +40,6 @@ def submit():
         return jsonify({"success": False}), HTTPStatus.BAD_REQUEST
 
 
-
 @app.route('/register', methods=['POST'])
 def register():
     success = True
@@ -47,7 +47,6 @@ def register():
         return jsonify({"success": True})
     else:
         return jsonify({"success": False}), HTTPStatus.BAD_REQUEST
-
 
 
 if __name__ == "__main__":

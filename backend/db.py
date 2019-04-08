@@ -1,7 +1,6 @@
 import os
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
-from flask import g
 from backend.server import app
 from sqlalchemy.orm import sessionmaker
 
@@ -13,10 +12,6 @@ def enable_debug():
 
 
 enable_debug()
-
-SessionFactory = sessionmaker()
-Base = db.ext.declarative.declarative_base()
-DATABASE = 'db.sqlite'
 
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -32,6 +27,8 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 # an email can have 1..many devices
 # a capsule can have 1..many capsule recipients
 # a
+
+Base = db.ext.declarative.declarative_base()
 
 
 class Email(Base):
@@ -79,57 +76,56 @@ class CapsuleRecipient(Base):
             self.uuid, self.email, self.capsule)
 
 
+def get_engine():
+    engine = getattr(app.config, 'engine', None)
+    if engine is None:
+        engine = app.config['engine'] = db.create_engine('sqlite:///' + app.config['DATABASE'])
+    return engine
+
+
+def get_session():
+    SessionFactory = getattr(app.config, 'SessionFactory', None)
+    if SessionFactory is None:
+        SessionFactory = app.config['SessionFactory'] = sessionmaker()
+        SessionFactory.configure(bind=get_engine())
+    return SessionFactory()
+
+
 def init_db(persist: bool = False) -> None:
-    if not persist and os.path.isfile(DATABASE):
-        os.unlink(DATABASE)
-    engine = db.create_engine('sqlite:///' + DATABASE)
-    SessionFactory.configure(bind=engine)
-    # for tablename in [Capsule.__tablename__, CapsuleRecipient.__tablename__, Device.__tablename__]:
-    #     if not engine.dialect.has_table(engine, Device.__tablename__):  # If table don't exist, Create.
-    Base.metadata.create_all(engine)
+    if not persist and os.path.isfile(app.config['DATABASE']):
+        os.unlink(app.config['DATABASE'])
+    session = get_session()
+    Base.metadata.create_all(get_engine())
 
 
 def load_sample_data() -> None:
-    session = SessionFactory()
+    session = get_session()
     email1 = Email(email='c1r1@test.com')
     email2 = Email(email='c2r1@test.com')
     device1 = Device(pubkey='pubkeyNOAUTH', email=email1.email, nonce='nonceNOAUTH', is_auth=False)
     device2 = Device(pubkey='pubkeyAUTH', email=email2.email, nonce='nonceAUTH', is_auth=True)
     cap1 = Capsule(uuid="uuid1", decrypt_key="key1")
     cap2 = Capsule(uuid="uuid2", decrypt_key="key2")
-    cap1recip1 = CapsuleRecipient(uuid="uuid1", email=device1.email)
-    cap1recip2 = CapsuleRecipient(uuid="uuid1", email=device2.email)
-    cap2recip1 = CapsuleRecipient(uuid="uuid2", email=device1.email)
+    cap1recip1 = CapsuleRecipient(uuid=cap1.uuid, email=device1.email)
+    cap1recip2 = CapsuleRecipient(uuid=cap1.uuid, email=device2.email)
+    cap2recip1 = CapsuleRecipient(uuid=cap2.uuid, email=device1.email)
     session.add_all([email1, email2, device1, device2, cap1, cap2, cap1recip1, cap1recip2, cap2recip1])
     session.commit()
 
 
-def get_session():
-    db = g._database
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-    return db
-
-
 @app.teardown_appcontext
 def close_connection(exception):
-    db = getattr(g, '_database', None)
+    db = getattr(g, app.config['DATABASE'], None)
     if db is not None:
         db.close()
 
 
-init_db()
-load_sample_data()
-session = SessionFactory()
-our_user = session.query(Device)
-print(our_user)
+if __name__ == "__main__":
+    init_db()
+    load_sample_data()
+    session = get_session()
+    our_user = session.query(Device)
+    print(our_user)
 
-# session.add(CapsuleRecipient(uuid="uuid2", email="99999999@test.com"))
-# session.commit()
-print(session)
 # session.query.join(Address, User.id == Address.user_id)
-#
-# a = Device()
-# print(a)
-# import inspect
-# print(inspect.signature(a.__init__))
+

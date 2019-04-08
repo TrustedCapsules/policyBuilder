@@ -1,9 +1,8 @@
-import os
 import tempfile
-
 import pytest
-
-from backend import server
+from sqlalchemy import exc
+from backend import server, db
+from backend.db import *
 
 
 @pytest.fixture
@@ -13,13 +12,17 @@ def client():
     client = server.app.test_client()
 
     with server.app.app_context():
-        server.init_db()
+        db.init_db()
 
     yield client
-
     os.close(db_fd)
     os.unlink(server.app.config['DATABASE'])
-    assert False
 
-def test_hello():
-    assert True
+
+def test_fk_raises_exception():
+    session = get_session()
+    email1 = Email(email="1@test.com")
+    device1 = Device(pubkey='pubkeyNOAUTH', email='2@test.com', nonce='nonceNOAUTH', is_auth=False)
+    session.add_all([email1, device1])
+    with pytest.raises(exc.OperationalError):
+        session.commit()
