@@ -24,5 +24,11 @@ def test_fk_raises_exception(client):
     email1 = Email(email="1@test.com")
     device1 = Device(pubkey='pubkeyNOAUTH', email='2@test.com', nonce='nonceNOAUTH', is_auth=False)
     session.add_all([email1, device1])
-    with pytest.raises(sa.exc.IntegrityError): #fk check fails
+    with pytest.raises(sa.exc.IntegrityError):  # fk check fails
         session.commit()
+
+
+def test_registration_good(client):
+    json_str = '{"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}'
+    ok, nonce = db.register_device(json_str)
+    assert (ok, nonce != '')

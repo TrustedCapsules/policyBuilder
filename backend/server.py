@@ -40,6 +40,11 @@ def submit():
         return jsonify({"success": False}), HTTPStatus.BAD_REQUEST
 
 
+# input: json in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
+# response: json in format of {success: true, "verification_nonce": "SOMENONCEHERE"}
+# send an email with a special token to email address passed in
+# adds the email to the emails table, pubkey email combo to the devices table
+# idempotent function, will return success if user tries to register again
 @app.route('/register', methods=['POST'])
 def register():
     success = True

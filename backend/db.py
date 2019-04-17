@@ -1,4 +1,5 @@
 import os
+import json
 import logging  # for debug
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
@@ -7,6 +8,8 @@ from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy.engine import Engine  # for fk
 from sqlalchemy import event  # ditto
+from jsonschema import validate
+from typing import Tuple
 
 
 @event.listens_for(Engine, "connect")
@@ -59,7 +62,7 @@ class CapsuleRecipient(Base):
     __tablename__ = 'capsule_recipients'
     __table_args__ = (sa.PrimaryKeyConstraint('uuid', 'email', name='capsule_recipients_pk'),)
     uuid = sa.Column(sa.String, sa.ForeignKey(Capsule.uuid), index=True, nullable=False)
-    email = sa.Column(sa.String, sa.ForeignKey(Email.email), nullable=False)
+    email = sa.Column(sa.String, nullable=False)
     capsule = sa.orm.relationship('Capsule', back_populates='recipients')
 
     def __repr__(self):
@@ -105,6 +108,51 @@ def load_sample_data() -> None:
     cap2recip1 = CapsuleRecipient(uuid=cap2.uuid, email=device1.email)
     session.add_all([email1, email2, device1, device2, cap1, cap2, cap1recip1, cap1recip2, cap2recip1])
     session.commit()
+
+
+# expects
+# returns an ok, nonce tuple
+def register_device(json_str: str) -> Tuple[bool, str]:
+    try:
+        validate_register_device(json_str)
+        return True, "NONCE"
+    except:
+        return False, ""
+
+
+def validate_register_device(json_str: str):
+    schema = {
+        "type": "object",
+        "properties": {
+            "pubkey": {"type": "string"},
+            "email": {"type": "string"},
+        }
+    }
+    validate(instance=json.loads(json_str), schema=schema)
+
+
+# expects
+# returns an ok, nonce tuple
+def gen_capsule(json_str: str) -> Tuple[bool, str]:
+    try:
+        validate_gen_request(json_str)
+        return True, "NONCE"
+    except:
+        return False, ""
+
+
+def validate_gen_request(json_str: str):
+    schema = {
+        "type": "object",
+        "properties": {
+            "file": {"type": "number"},
+            "policy": {"type": "string"},
+            "email1": {"type": "string"},
+            "email2": {"type": "string"},
+        }
+    }
+
+    validate(instance=json.loads(json_str), schema=schema)
 
 
 @app.teardown_appcontext
