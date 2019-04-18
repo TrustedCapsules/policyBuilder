@@ -1,8 +1,5 @@
-from flask import Flask, jsonify, request, send_from_directory, send_file
-from http import HTTPStatus
-from werkzeug.utils import secure_filename
-import os
-from req_parser import CapsuleRequest, RegisterRequest
+import req_handler
+from flask import Flask, request, send_from_directory, send_file
 from db import init_db as init_db1
 
 app = Flask(__name__)
@@ -20,11 +17,6 @@ def home():
     return send_file('html/index.html')
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() == 'lua'
-
-
 # input: application/json request in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
 # response: json in format of {success: true, "verification_nonce": "SOMENONCEHERE"}
 # send an email with a special token to email address passed in
@@ -32,19 +24,7 @@ def allowed_file(filename):
 # does not allow reregistration of email TODO: ask ivan
 @app.route('/register', methods=['POST'])
 def register():
-    if not request.is_json:
-        return jsonify({"success": False, "msg": "Must send json"}), HTTPStatus.BAD_REQUEST
-
-    data: dict = request.get_json()
-    if not RegisterRequest.is_valid(data):
-        return jsonify({"success": False, "msg": "Invalid register data"}), HTTPStatus.BAD_REQUEST
-
-    reg_req = RegisterRequest(data)
-    nonce, ok = reg_req.insert()
-    if not ok:
-        return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
-
-    return jsonify({"success": True, "nonce": nonce})
+    return req_handler.register_request(request)
 
 
 # input: application/json request in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
@@ -54,32 +34,7 @@ def register():
 # idempotent function, will return success if user tries to register again
 @app.route('/capsule', methods=['POST'])
 def capsule():
-    is_lua_uploaded = False
-    filename = None
-    for name_field, file in request.files.items():
-        if file.filename == '' or not allowed_file(file.filename):
-            continue
-
-        filename = secure_filename(file.filename)
-        file.save(os.path.join('uploads/', filename))
-        is_lua_uploaded = True
-        break
-
-    if not is_lua_uploaded:
-        return jsonify({"success": False, "msg": "No lua file"}), HTTPStatus.BAD_REQUEST
-
-    data = request.form.to_dict()
-    if not CapsuleRequest.is_valid(data):
-        return jsonify({"success": False, "msg": "Invalid form data"}), HTTPStatus.BAD_REQUEST
-
-    print('filename is:', filename)
-    cap_req = CapsuleRequest(request.form, filename)
-    capsule_filename, ok = cap_req.insert()
-    if not ok:
-        return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
-
-    capsule_url = request.url + capsule_filename  # TODO: fix
-    return jsonify({"success": True, "capsule_url": capsule_url})
+    return req_handler.capsule_request(request)
 
 
 @app.teardown_appcontext

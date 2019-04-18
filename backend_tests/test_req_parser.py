@@ -2,7 +2,7 @@ import tempfile
 import pytest
 import os
 from backend import keyserver
-from backend.req_parser import RegisterRequest, CapsuleRequest
+from backend.req_models import RegisterRequest, CapsuleRequest
 
 
 @pytest.fixture
