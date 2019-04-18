@@ -1,14 +1,11 @@
 import os
-import json
 import logging  # for debug
 import sqlalchemy as sa
+from flask import g, current_app
 from sqlalchemy.ext.declarative import declarative_base
-from backend.server import app
 from sqlalchemy.orm import sessionmaker
-
 from sqlalchemy.engine import Engine  # for fk
 from sqlalchemy import event  # ditto
-from jsonschema import validate
 from typing import Tuple
 
 
@@ -71,28 +68,31 @@ class CapsuleRecipient(Base):
 
 
 def get_engine() -> sa.engine:
-    engine = getattr(app.config, 'engine', None)
-    if engine is None:
-        engine = app.config['engine'] = sa.create_engine('sqlite:///' + app.config['DATABASE'])
-    return engine
+    with current_app.app_context():
+        engine = g.get('engine', None)
+        if engine is None:
+            engine = g.engine = sa.create_engine('sqlite:///' + current_app.config['DATABASE'])
+        return engine
 
 
 def get_session() -> sa.orm.session.Session:
-    SessionFactory = getattr(app.config, 'SessionFactory', None)
-    if SessionFactory is None:
-        SessionFactory = app.config['SessionFactory'] = sessionmaker()
-        SessionFactory.configure(bind=get_engine())
-    return SessionFactory()
+    with current_app.app_context():
+        session_factory = g.get('session_factory', None)
+        if session_factory is None:
+            session_factory = g.session_factory = sessionmaker()
+            session_factory.configure(bind=get_engine())
+        return session_factory()
 
 
 def init_db() -> None:
-    if app.testing:
-        logging.basicConfig()
-        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-        if os.path.isfile(app.config['DATABASE']):
-            os.unlink(app.config['DATABASE'])
-    get_session()
-    Base.metadata.create_all(get_engine())  # generate the tables
+    with current_app.app_context():
+        if current_app.config['TESTING']:
+            logging.basicConfig()
+            logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+            if os.path.isfile(current_app.config['DATABASE']):
+                os.unlink(current_app.config['DATABASE'])
+        get_session()
+        Base.metadata.create_all(get_engine())  # generate the tables
 
 
 def load_sample_data() -> None:
@@ -108,58 +108,6 @@ def load_sample_data() -> None:
     cap2recip1 = CapsuleRecipient(uuid=cap2.uuid, email=device1.email)
     session.add_all([email1, email2, device1, device2, cap1, cap2, cap1recip1, cap1recip2, cap2recip1])
     session.commit()
-
-
-# expects
-# returns an ok, nonce tuple
-def register_device(json_str: str) -> Tuple[bool, str]:
-    try:
-        validate_register_device(json_str)
-        return True, "NONCE"
-    except:
-        return False, ""
-
-
-def validate_register_device(json_str: str):
-    schema = {
-        "type": "object",
-        "properties": {
-            "pubkey": {"type": "string"},
-            "email": {"type": "string"},
-        }
-    }
-    validate(instance=json.loads(json_str), schema=schema)
-
-
-# expects
-# returns an ok, nonce tuple
-def gen_capsule(json_str: str) -> Tuple[bool, str]:
-    try:
-        validate_gen_request(json_str)
-        return True, "NONCE"
-    except:
-        return False, ""
-
-
-def validate_gen_request(json_str: str):
-    schema = {
-        "type": "object",
-        "properties": {
-            "file": {"type": "number"},
-            "policy": {"type": "string"},
-            "email1": {"type": "string"},
-            "email2": {"type": "string"},
-        }
-    }
-
-    validate(instance=json.loads(json_str), schema=schema)
-
-
-@app.teardown_appcontext
-def close_connection(exception):
-    SessionFactory = getattr(app.config, 'SessionFactory', None)
-    if SessionFactory is not None:
-        SessionFactory.close_all_sessions()
 
 
 if __name__ == "__main__":

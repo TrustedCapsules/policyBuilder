@@ -19,7 +19,7 @@ function MyDropzone() {
     const [email2, setEmail2] = React.useState("");
     const [inviteRecipients, setInviteRecipients] = React.useState(false);
     const onDrop = React.useCallback((acceptedFiles: File[]) => {
-        const req = superagent.post('http://127.0.0.1:5001/submit')
+        const req = superagent.post('http://127.0.0.1:5001/capsule')
             .field({email1})
             .field({email2})
             .field({inviteRecipients});

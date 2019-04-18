@@ -1,34 +1,30 @@
+import os
 import tempfile
 import pytest
 import sqlalchemy as sa
-from backend import server, db
-from backend.db import *
+from backend import keyserver
+from backend.db import Email, Device, get_session
 
 
 @pytest.fixture
 def client():
-    db_fd, server.app.config['DATABASE'] = tempfile.mkstemp()
-    server.app.config['TESTING'] = True
-    client = server.app.test_client()
+    db_fd, keyserver.app.config['DATABASE'] = tempfile.mkstemp()
+    keyserver.app.config['TESTING'] = True
+    client = keyserver.app.test_client()
 
-    with server.app.app_context():
-        db.init_db()
+    with keyserver.app.app_context():
+        keyserver.init_db()
 
     yield client
     os.close(db_fd)
-    os.unlink(server.app.config['DATABASE'])
+    os.unlink(keyserver.app.config['DATABASE'])
 
 
 def test_fk_raises_exception(client):
-    session = get_session()
-    email1 = Email(email="1@test.com")
-    device1 = Device(pubkey='pubkeyNOAUTH', email='2@test.com', nonce='nonceNOAUTH', is_auth=False)
-    session.add_all([email1, device1])
-    with pytest.raises(sa.exc.IntegrityError):  # fk check fails
-        session.commit()
-
-
-def test_registration_good(client):
-    json_str = '{"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}'
-    ok, nonce = db.register_device(json_str)
-    assert (ok, nonce != '')
+    with keyserver.app.app_context():
+        session = get_session()
+        email1 = Email(email="1@test.com")
+        device1 = Device(pubkey='pubkeyNOAUTH', email='2@test.com', nonce='nonceNOAUTH', is_auth=False)
+        session.add_all([email1, device1])
+        with pytest.raises(sa.exc.IntegrityError):  # fk check fails
+            session.commit()
