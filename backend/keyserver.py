@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, send_from_directory, send_file, g
+from flask import Flask, jsonify, request, send_from_directory, send_file
 from http import HTTPStatus
 from werkzeug.utils import secure_filename
 import os
@@ -25,6 +25,33 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() == 'lua'
 
 
+# input: application/json request in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
+# response: json in format of {success: true, "verification_nonce": "SOMENONCEHERE"}
+# send an email with a special token to email address passed in
+# adds the email to the emails table, pubkey email combo to the devices table
+# does not allow reregistration of email TODO: ask ivan
+@app.route('/register', methods=['POST'])
+def register():
+    if not request.is_json:
+        return jsonify({"success": False, "msg": "Must send json"}), HTTPStatus.BAD_REQUEST
+
+    data: dict = request.get_json()
+    if not RegisterRequest.is_valid(data):
+        return jsonify({"success": False, "msg": "Invalid register data"}), HTTPStatus.BAD_REQUEST
+
+    reg_req = RegisterRequest(data)
+    nonce, ok = reg_req.insert()
+    if not ok:
+        return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
+
+    return jsonify({"success": True, "nonce": nonce})
+
+
+# input: application/json request in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
+# response: json in format of {success: true, "verification_nonce": "SOMENONCEHERE"}
+# send an email with a special token to email address passed in
+# adds the email to the emails table, pubkey email combo to the devices table
+# idempotent function, will return success if user tries to register again
 @app.route('/capsule', methods=['POST'])
 def capsule():
     is_lua_uploaded = False
@@ -51,29 +78,8 @@ def capsule():
     if not ok:
         return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
 
-    capsule_url = request.remote_addr + capsule_filename  # TODO: fix
+    capsule_url = request.url + capsule_filename  # TODO: fix
     return jsonify({"success": True, "capsule_url": capsule_url})
-
-
-# input: json in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
-# response: json in format of {success: true, "verification_nonce": "SOMENONCEHERE"}
-# send an email with a special token to email address passed in
-# adds the email to the emails table, pubkey email combo to the devices table
-# idempotent function, will return success if user tries to register again
-@app.route('/register', methods=['POST'])
-def register():
-    print(request.data)
-
-    data = request.form.to_dict()
-    if not RegisterRequest.is_valid(data):
-        return jsonify({"success": False, "msg": "Invalid form data"}), HTTPStatus.BAD_REQUEST
-
-    reg_req = RegisterRequest(request.form)
-    nonce, ok = reg_req.insert()
-    if not ok:
-        return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
-
-    return jsonify({"success": True, "nonce": nonce})
 
 
 @app.teardown_appcontext

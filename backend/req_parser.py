@@ -1,21 +1,62 @@
+import db
 import uuid
 from dataclasses import dataclass
-from typing import Tuple, Dict
 from jsonschema import validate
 from jsonschema.exceptions import FormatError, ValidationError
+from typing import Tuple, Dict
+
+
+@dataclass
+class RegisterRequest:
+    email: str
+    pubkey: str
+
+    def __init__(self, data: Dict[str, str]) -> None:
+        self.email = data['email']
+        self.pubkey = data['pubkey']
+
+    @staticmethod
+    def is_valid(req: Dict[str, str]) -> bool:
+        schema = {
+            "type": "object",
+            "properties": {
+                "email": {"type": "string", "format": "email"},
+                "pubkey": {"type": "string"},
+            }
+        }
+
+        try:
+            validate(instance=req, schema=schema)
+            return True
+        except FormatError:
+            print('format err')
+            return False
+        except ValidationError:
+            print('validation err')
+            return False
+
+    # returns a nonce and success bool
+    def insert(self) -> Tuple[str, bool]:
+        nonce = str(uuid.uuid4())
+        print('inserting', self)
+        session = db.get_session()
+        email = db.Email(email=self.email)
+        device = db.Device(pubkey=self.pubkey, email=self.email, nonce=nonce, is_auth=False)
+        session.add_all([email, device])
+        return nonce, True
 
 
 @dataclass
 class CapsuleRequest:
-    policy_filename: str
     email1: str
     email2: str
+    policy_filename: str
     invite_recipients: bool
 
     def __init__(self, data: Dict[str, str], policy_filename: str) -> None:
-        self.policy_filename = policy_filename
         self.email1 = data['email1']
         self.email2 = data['email2']
+        self.policy_filename = policy_filename
         self.invite_recipients = (data['inviteRecipients'] == 'true')
 
     @staticmethod
@@ -46,39 +87,3 @@ class CapsuleRequest:
     def insert(self) -> Tuple[str, bool]:
         print('inserting', self)
         return "SOME GENERATED CAPSULE FILENAME", True
-
-
-@dataclass
-class RegisterRequest:
-    pubkey: str
-    email: str
-
-    def __init__(self, data: Dict[str, str]) -> None:
-        self.pubkey = data['pubkey']
-        self.email = data['email']
-
-    @staticmethod
-    def is_valid(req: Dict[str, str]) -> bool:
-        schema = {
-            "type": "object",
-            "properties": {
-                "pubkey": {"type": "string"},
-                "email": {"type": "string", "format": "email"},
-            }
-        }
-
-        try:
-            validate(instance=req, schema=schema)
-            return True
-        except FormatError:
-            print('format err')
-            return False
-        except ValidationError:
-            print('validation err')
-            return False
-
-    # returns a nonce and success bool
-    def insert(self) -> Tuple[str, bool]:
-        nonce = str(uuid.uuid4())
-        print('inserting', self)
-        return nonce, True

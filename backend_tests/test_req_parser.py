@@ -20,18 +20,20 @@ def client():
 
 
 def test_capsule_request(client):
-    form_data = {"email1": "a@email.com",
-                 "email2": "b@email.com",
-                 "inviteRecipients": "true"}
-    assert CapsuleRequest.is_valid(form_data)
-    cap_req = CapsuleRequest(form_data, "A FILEPATH HERE")
-    capsule_filename, ok = cap_req.insert()
-    assert capsule_filename != '' and ok
+    with keyserver.app.app_context():
+        form_data = {"email1": "a@email.com",
+                     "email2": "b@email.com",
+                     "inviteRecipients": "true"}
+        assert CapsuleRequest.is_valid(form_data)
+        cap_req = CapsuleRequest(form_data, "A FILEPATH HERE")
+        capsule_filename, ok = cap_req.insert()
+        assert capsule_filename != '' and ok
 
 
 def test_register_request(client):
-    form_data = {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
-    assert RegisterRequest.is_valid(form_data)
-    reg_req = RegisterRequest(form_data)
-    nonce, ok = reg_req.insert()
-    assert nonce != '' and ok
+    with keyserver.app.app_context():
+        form_data = {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
+        assert RegisterRequest.is_valid(form_data)
+        reg_req = RegisterRequest(form_data)
+        nonce, ok = reg_req.insert()
+        assert nonce != '' and ok

@@ -6,15 +6,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import Engine  # for fk
 from sqlalchemy import event  # ditto
-from typing import Tuple
-
-
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record) -> None:
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
-
 
 # an email can have 1..many devices
 # a capsule can have 1..many capsule recipients
@@ -28,7 +19,7 @@ class Email(Base):
     devices = sa.orm.relationship('Device')
 
     def __repr__(self):
-        return "<Email(email='%s', device='%s')>" % (
+        return "<Email(email='%s', devices='%s')>" % (
             self.email, self.devices)
 
 
@@ -94,3 +85,10 @@ def init_db() -> None:
         get_session()
         Base.metadata.create_all(get_engine())  # generate the tables
 
+
+# forces fk to work (default is off)
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
