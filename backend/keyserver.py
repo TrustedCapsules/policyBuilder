@@ -79,6 +79,7 @@ def close_connection(exception):
         session_factory.close_all_sessions()
 
 
+@app.before_first_request
 def init_db():
     db.init_db()
 
