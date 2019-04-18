@@ -2,8 +2,8 @@ from flask import Flask, jsonify, request, send_from_directory, send_file, g
 from http import HTTPStatus
 from werkzeug.utils import secure_filename
 import os
-from backend.req_parser import *
-from backend import db
+from req_parser import CapsuleRequest, RegisterRequest
+from db import init_db as init_db1
 
 app = Flask(__name__)
 app.config['DATABASE'] = 'db.sqlite'
@@ -85,7 +85,7 @@ def close_connection(exception):
 
 @app.before_first_request
 def init_db():
-    db.init_db()
+    init_db1()
 
 
 if __name__ == "__main__":
