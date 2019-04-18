@@ -1,4 +1,6 @@
 Flask
+werkzeug
 sqlalchemy
 pytest
 jsonschema
+pycryptodomex
