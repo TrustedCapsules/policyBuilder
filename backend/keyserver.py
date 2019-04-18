@@ -47,8 +47,12 @@ def capsule():
 
     print('filename is:', filename)
     cap_req = CapsuleRequest(request.form, filename)
-    print('capreq', cap_req)
-    return jsonify({"success": True})
+    capsule_filename, ok = cap_req.insert()
+    if not ok:
+        return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
+
+    capsule_url = request.remote_addr + capsule_filename  # TODO: fix
+    return jsonify({"success": True, "capsule_url": capsule_url})
 
 
 # input: json in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
@@ -62,14 +66,14 @@ def register():
 
     data = request.form.to_dict()
     if not RegisterRequest.is_valid(data):
-        return jsonify({"success": False}), HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "msg": "Invalid form data"}), HTTPStatus.BAD_REQUEST
 
     reg_req = RegisterRequest(request.form)
+    nonce, ok = reg_req.insert()
+    if not ok:
+        return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
 
-    if not reg_req.insert():
-        return jsonify({"success": False}), HTTPStatus.BAD_REQUEST
-
-    return jsonify({"success": True})
+    return jsonify({"success": True, "nonce": nonce})
 
 
 @app.teardown_appcontext
