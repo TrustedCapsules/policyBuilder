@@ -1,5 +1,5 @@
-from Cryptodome.PublicKey import RSA
 from Cryptodome.Cipher import PKCS1_OAEP
+from Cryptodome.PublicKey import RSA
 
 
 # Encrypts @unencrypted_msg with @pub_key
@@ -20,6 +20,7 @@ def demo():
     pubkey = open("/home/eric/.ssh/id_rsa.pub", "r").read()
     msg = "I met aliens in UFO. Here is the map.".encode("utf-8")
     encrypted = encrypt_rsa(msg, pubkey)
+    print(encrypted)
 
     privkey = open("/home/eric/.ssh/id_rsa", "r").read()
     decrypted = decrypt_rsa(encrypted, privkey)

@@ -1,5 +1,6 @@
-import req_handler
 from flask import Flask, request, send_from_directory, send_file
+
+import req_handler
 from db import init_db as init_db1
 
 app = Flask(__name__)

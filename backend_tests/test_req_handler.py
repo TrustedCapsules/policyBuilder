@@ -1,6 +1,8 @@
 import os
-import pytest
 import tempfile
+
+import pytest
+
 from backend import keyserver, db
 
 
@@ -8,6 +10,7 @@ from backend import keyserver, db
 def client():
     db_fd, keyserver.app.config['DATABASE'] = tempfile.mkstemp()
     keyserver.app.config['TESTING'] = True
+    keyserver.app.config['UPLOAD_FOLDER'] = '../uploads'
     client = keyserver.app.test_client()
 
     with keyserver.app.app_context():
@@ -25,7 +28,7 @@ def test_register_request(client):
         assert test_session.query(db.Device).count() == 0
         test_session.close()
         resp = client.post('/register', json={"email": "bob@email.com",
-                                              "pubkey": open("demo.pub", "r").read()})
+                                              "pubkey": open("demo_rsakey.pub", "r").read()})
 
         test_session = db.get_session()
         assert resp.status_code == 200
@@ -34,13 +37,22 @@ def test_register_request(client):
         test_session.close()
 
 
-def test_capsule_request():
-    # with keyserver.app.test_client() as c:
-    #     resp = c.post('/capsule',
-    #                   content_type='multipart/form-data',
-    #                   data={"email": "bob@email.com", "pubkey": "THISISAPUBKEY"})
-    #     print('respdata', resp.data)
-    #     assert resp.status_code == 200
-    #     # data = json.loads(resp.data)
-    #     # self.assert_equal(data['username'], my_user.username)
-    pass
+def test_capsule_request(client):
+    with keyserver.app.app_context():
+        test_session = db.get_session()
+        assert test_session.query(db.Capsule).count() == 0
+        assert test_session.query(db.CapsuleRecipient).count() == 0
+        test_session.close()
+
+        resp = client.post('/capsule',
+                           content_type='multipart/form-data',
+                           data={"email1": "a@email.com",
+                                 "email2": "b@email.com",
+                                 "inviteRecipients": "true",
+                                 "demo.lua": open("demo.lua", "rb")})
+
+        assert resp.status_code == 200
+        test_session = db.get_session()
+        assert test_session.query(db.Capsule).count() == 1
+        assert test_session.query(db.CapsuleRecipient).count() == 2
+        test_session.close()

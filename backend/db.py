@@ -1,11 +1,12 @@
-import os
 import logging  # for debug
+import os
+
 import sqlalchemy as sa
 from flask import g, current_app
+from sqlalchemy import event  # ditto
+from sqlalchemy.engine import Engine  # for fk
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.engine import Engine  # for fk
-from sqlalchemy import event  # ditto
 
 # an email can have 1..many devices
 # a capsule can have 1..many capsule recipients
@@ -27,7 +28,7 @@ class Device(Base):
     __tablename__ = 'devices'
     pubkey = sa.Column(sa.String, primary_key=True)
     email = sa.Column(sa.String, sa.ForeignKey(Email.email), nullable=False)
-    nonce = sa.Column(sa.String, nullable=False)
+    nonce = sa.Column(sa.Binary, nullable=False)
     is_auth = sa.Column(sa.Boolean, nullable=False)
 
     def __repr__(self):

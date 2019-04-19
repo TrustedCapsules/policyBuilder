@@ -1,5 +1,5 @@
-import os, smtplib, uuid
-import sqlalchemy
+import smtplib
+import uuid
 from email.message import EmailMessage
 
 key = uuid.uuid4()

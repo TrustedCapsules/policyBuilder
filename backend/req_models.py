@@ -1,10 +1,14 @@
-import db
+import base64
 import uuid
-import crypto
 from dataclasses import dataclass
+from typing import Tuple, Dict
+
+from Cryptodome.Random import get_random_bytes
 from jsonschema import validate
 from jsonschema.exceptions import FormatError, ValidationError
-from typing import Tuple, Dict
+
+import crypto
+import db
 
 
 @dataclass
@@ -38,10 +42,10 @@ class RegisterRequest:
 
     # returns an encrypted nonce and success bool
     def insert(self) -> Tuple[str, bool]:
-        nonce = uuid.uuid4().bytes
+        nonce = base64.urlsafe_b64encode(get_random_bytes(16))
         session = db.get_session()
         email = db.Email(email=self.email)
-        device = db.Device(pubkey=self.pubkey, email=self.email, nonce=str(nonce), is_auth=False)
+        device = db.Device(pubkey=self.pubkey, email=self.email, nonce=nonce, is_auth=False)
         session.add_all([email, device])
         try:
             session.commit()
@@ -90,7 +94,21 @@ class CapsuleRequest:
             print('validation err')
             return False
 
-    # returns a capsule file path, and success bool
+    # returns a file path to a generated capsule, and success bool
     def insert(self) -> Tuple[str, bool]:
-        print('inserting', self)
-        return "SOME GENERATED CAPSULE FILENAME", True
+        session = db.get_session()
+        cap_uuid = uuid.uuid4().hex
+        recip1 = db.CapsuleRecipient(uuid=cap_uuid, email=self.email1)
+        recip2 = db.CapsuleRecipient(uuid=cap_uuid, email=self.email2)
+        decrypt_key = get_random_bytes(16).hex()
+        cap = db.Capsule(uuid=cap_uuid, decrypt_key=decrypt_key, recipients=[recip1, recip2])
+        session.add_all([cap, recip1, recip2])
+
+        # TODO: call cgen code here
+        try:
+            session.commit()
+            return "SOME GENERATED CAPSULE FILENAME", True
+        except Exception as e:
+            print(e)
+            session.rollback()
+            return "", False

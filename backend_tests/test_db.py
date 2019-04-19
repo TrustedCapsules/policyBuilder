@@ -1,7 +1,9 @@
 import os
 import tempfile
+
 import pytest
 import sqlalchemy as sa
+
 from backend import keyserver
 from backend.db import Email, Device, Capsule, CapsuleRecipient, get_session
 
@@ -24,7 +26,7 @@ def test_fk_raises_exception(client):
     with keyserver.app.app_context():
         session = get_session()
         email1 = Email(email="1@test.com")
-        device1 = Device(pubkey='pubkeyNOAUTH', email='2@test.com', nonce='nonceNOAUTH', is_auth=False)
+        device1 = Device(pubkey='pubkeyNOAUTH', email='2@test.com', nonce='nonceNOAUTH'.encode('utf-8'), is_auth=False)
         session.add_all([email1, device1])
         with pytest.raises(sa.exc.IntegrityError):  # fk check fails
             session.commit()
@@ -34,10 +36,10 @@ def load_sample_data() -> None:
     session = get_session()
     email1 = Email(email='c1r1@test.com')
     email2 = Email(email='c2r1@test.com')
-    device1 = Device(pubkey='pubkeyNOAUTH', email=email1.email, nonce='nonceNOAUTH', is_auth=False)
-    device2 = Device(pubkey='pubkeyAUTH', email=email2.email, nonce='nonceAUTH', is_auth=True)
-    cap1 = Capsule(uuid="uuid1", decrypt_key="key1")
-    cap2 = Capsule(uuid="uuid2", decrypt_key="key2")
+    device1 = Device(pubkey='pubkeyNOAUTH', email=email1.email, nonce='nonceNOAUTH'.encode('utf-8'), is_auth=False)
+    device2 = Device(pubkey='pubkeyAUTH', email=email2.email, nonce='nonceAUTH'.encode('utf-8'), is_auth=True)
+    cap1 = Capsule(uuid="uuid1".encode('utf-8'), decrypt_key="key1")
+    cap2 = Capsule(uuid="uuid2".encode('utf-8'), decrypt_key="key2")
     cap1recip1 = CapsuleRecipient(uuid=cap1.uuid, email=device1.email)
     cap1recip2 = CapsuleRecipient(uuid=cap1.uuid, email=device2.email)
     cap2recip1 = CapsuleRecipient(uuid=cap2.uuid, email=device1.email)

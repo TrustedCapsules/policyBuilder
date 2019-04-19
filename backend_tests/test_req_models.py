@@ -1,6 +1,8 @@
-import tempfile
-import pytest
 import os
+import tempfile
+
+import pytest
+
 from backend import keyserver
 from backend.req_models import RegisterRequest, CapsuleRequest
 
@@ -19,6 +21,16 @@ def client():
     os.unlink(keyserver.app.config['DATABASE'])
 
 
+def test_register_request(client):
+    with keyserver.app.app_context():
+        form_data = {"email": "a@email.com",
+                     "pubkey": open("demo_rsakey.pub", "r").read()}
+        assert RegisterRequest.is_valid(form_data)
+        reg_req = RegisterRequest(form_data)
+        nonce, ok = reg_req.insert()
+        assert nonce != '' and ok
+
+
 def test_capsule_request(client):
     with keyserver.app.app_context():
         form_data = {"email1": "a@email.com",
@@ -27,14 +39,5 @@ def test_capsule_request(client):
         assert CapsuleRequest.is_valid(form_data)
         cap_req = CapsuleRequest(form_data, "A FILEPATH HERE")
         capsule_filename, ok = cap_req.insert()
+
         assert capsule_filename != '' and ok
-
-
-def test_register_request(client):
-    with keyserver.app.app_context():
-        form_data = {"email": "bob@email.com",
-                     "pubkey": open("demo.pub", "r").read()}
-        assert RegisterRequest.is_valid(form_data)
-        reg_req = RegisterRequest(form_data)
-        nonce, ok = reg_req.insert()
-        assert nonce != '' and ok

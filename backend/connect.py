@@ -1,4 +1,4 @@
-#used for connecting to the trusted capsule server
+# used for connecting to the trusted capsule server
 import socket
 
 TCP_IP = '127.0.0.1'
