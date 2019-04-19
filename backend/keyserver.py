@@ -27,11 +27,10 @@ def register():
     return req_handler.register_request(request)
 
 
-# input: application/json request in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
-# response: json in format of {success: true, "verification_nonce": "SOMENONCEHERE"}
-# send an email with a special token to email address passed in
-# adds the email to the emails table, pubkey email combo to the devices table
-# idempotent function, will return success if user tries to register again
+# input: mulitpart/form request in format of
+# {"email1": "a@a.com", "email2": "b@b.com", "inviteRecipients": "true", "file.lua": "contents"}
+# response: json in format of {success: true, "url": "SERVERIP:PORT/capsules/capsule1.cap"}
+# sends an email with invitation
 @app.route('/capsule', methods=['POST'])
 def capsule():
     return req_handler.capsule_request(request)

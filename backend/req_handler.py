@@ -53,4 +53,4 @@ def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
         return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
 
     capsule_url = request.url + capsule_filename  # TODO: fix to generate proper url
-    return jsonify({"success": True, "capsule_url": capsule_url})
+    return jsonify({"success": True, "url": capsule_url})
