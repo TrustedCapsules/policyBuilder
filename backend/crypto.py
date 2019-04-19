@@ -24,6 +24,3 @@ def demo():
     privkey = open("/home/eric/.ssh/id_rsa", "r").read()
     decrypted = decrypt_rsa(encrypted, privkey)
     print(decrypted)
-
-
-demo()

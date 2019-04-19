@@ -1,5 +1,6 @@
 import db
 import uuid
+import crypto
 from dataclasses import dataclass
 from jsonschema import validate
 from jsonschema.exceptions import FormatError, ValidationError
@@ -35,15 +36,21 @@ class RegisterRequest:
             print('validation err')
             return False
 
-    # returns a nonce and success bool
+    # returns an encrypted nonce and success bool
     def insert(self) -> Tuple[str, bool]:
-        nonce = str(uuid.uuid4())
-        print('inserting', self)
+        nonce = uuid.uuid4().bytes
         session = db.get_session()
         email = db.Email(email=self.email)
-        device = db.Device(pubkey=self.pubkey, email=self.email, nonce=nonce, is_auth=False)
+        device = db.Device(pubkey=self.pubkey, email=self.email, nonce=str(nonce), is_auth=False)
         session.add_all([email, device])
-        return nonce, True
+        try:
+            session.commit()
+            encrypted_nonce = str(crypto.encrypt_rsa(nonce, self.pubkey))
+            return encrypted_nonce, True
+        except Exception as e:
+            print(e)
+            session.rollback()
+            return "", False
 
 
 @dataclass

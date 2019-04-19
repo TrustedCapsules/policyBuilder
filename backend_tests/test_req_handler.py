@@ -23,16 +23,15 @@ def test_register_request(client):
         test_session = db.get_session()
         assert test_session.query(db.Email).count() == 0
         assert test_session.query(db.Device).count() == 0
-
+        test_session.close()
         resp = client.post('/register', json={"email": "bob@email.com",
-                                              "pubkey": "THISISAPUBKEY"})
+                                              "pubkey": open("demo.pub", "r").read()})
 
+        test_session = db.get_session()
         assert resp.status_code == 200
         assert test_session.query(db.Email).count() == 1
         assert test_session.query(db.Device).count() == 1
-        assert db.Email
-    # data = json.loads(resp.data)
-    # self.assert_equal(data['username'], my_user.username)
+        test_session.close()
 
 
 def test_capsule_request():

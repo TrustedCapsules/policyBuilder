@@ -32,7 +32,8 @@ def test_capsule_request(client):
 
 def test_register_request(client):
     with keyserver.app.app_context():
-        form_data = {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
+        form_data = {"email": "bob@email.com",
+                     "pubkey": open("demo.pub", "r").read()}
         assert RegisterRequest.is_valid(form_data)
         reg_req = RegisterRequest(form_data)
         nonce, ok = reg_req.insert()
