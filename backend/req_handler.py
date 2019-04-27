@@ -5,7 +5,7 @@ from typing import Tuple
 from flask import Request, jsonify, current_app
 from werkzeug.utils import secure_filename
 
-from req_models import CapsuleRequest, RegisterRequest
+from req_models import CapsuleRequest, VerifyRequest, RegisterRequest
 
 
 def register_request(request: Request) -> Tuple[str, HTTPStatus]:
@@ -22,6 +22,22 @@ def register_request(request: Request) -> Tuple[str, HTTPStatus]:
         return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
 
     return jsonify({"success": True, "nonce": nonce}), HTTPStatus.OK
+
+
+def verify_request(request: Request) -> Tuple[str, HTTPStatus]:
+    if not request.is_json:
+        return jsonify({"success": False, "msg": "Must send json"}), HTTPStatus.BAD_REQUEST
+
+    data: dict = request.get_json()
+    if not VerifyRequest.is_valid(data):
+        return jsonify({"success": False, "msg": "Invalid register data"}), HTTPStatus.BAD_REQUEST
+
+    verify_req = VerifyRequest(data)
+    nonce, ok = verify_req.insert()
+    if not ok:
+        return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
+
+    return jsonify({"success": True, "msg": ""}), HTTPStatus.OK
 
 
 def allowed_file(filename):

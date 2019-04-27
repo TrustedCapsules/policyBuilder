@@ -58,6 +58,54 @@ class RegisterRequest:
 
 
 @dataclass
+class VerifyRequest:
+    email: str
+    pubkey: str
+    nonce: str
+
+    def __init__(self, data: Dict[str, str]) -> None:
+        self.email = data['email']
+        self.pubkey = data['pubkey']
+        self.nonce = data['nonce']
+
+    @staticmethod
+    def is_valid(req: Dict[str, str]) -> bool:
+        schema = {
+            "type": "object",
+            "properties": {
+                "email": {"type": "string", "format": "email"},
+                "pubkey": {"type": "string"},
+                "nonce": {"type": "string"},
+            }
+        }
+
+        try:
+            validate(instance=req, schema=schema)
+            return True
+        except FormatError:
+            print('format err')
+            return False
+        except ValidationError:
+            print('validation err')
+            return False
+
+    #TODO: make work
+    def insert(self) -> Tuple[str, bool]:
+        session = db.get_session()
+        email = db.Email(email=self.email)
+        device = db.Device(pubkey=self.pubkey, email=self.email, nonce=nonce, is_auth=False)
+        session.add_all([email, device])
+        try:
+            session.commit()
+            encrypted_nonce = str(crypto.encrypt_rsa(nonce, self.pubkey))
+            return encrypted_nonce, True
+        except Exception as e:
+            print(e)
+            session.rollback()
+            return "", False
+
+
+@dataclass
 class CapsuleRequest:
     email1: str
     email2: str

@@ -28,7 +28,14 @@ def register():
     return req_handler.register_request(request)
 
 
-# input: mulitpart/form request in format of
+# input: application/json in format of {"email": "a@a.com", "pubkey": "THISISAPUBKEY", "nonce": "DECRYPTEDNONCE"}
+# response: json in format of {success: true, "msg": ""}
+@app.route('/verify', methods=['POST'])
+def verify():
+    return req_handler.verify_request(request)
+
+
+# input: multipart/form request in format of
 # {"email1": "a@a.com", "email2": "b@b.com", "inviteRecipients": "true", "file.lua": "contents"}
 # response: json in format of {success: true, "url": "SERVERIP:PORT/capsules/capsule1.cap"}
 # sends an email with invitation
