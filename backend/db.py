@@ -28,7 +28,7 @@ class Device(Base):
     __tablename__ = 'devices'
     pubkey = sa.Column(sa.String, primary_key=True)
     email = sa.Column(sa.String, sa.ForeignKey(Email.email), nullable=False)
-    nonce = sa.Column(sa.Binary, nullable=False)
+    nonce = sa.Column(sa.String, nullable=False)
     is_auth = sa.Column(sa.Boolean, nullable=False)
 
     def __repr__(self):

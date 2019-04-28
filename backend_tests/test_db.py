@@ -2,7 +2,7 @@ import os
 import tempfile
 
 import pytest
-import sqlalchemy as sa
+from sqlalchemy.exc import IntegrityError
 
 from backend import keyserver
 from backend.db import Email, Device, Capsule, CapsuleRecipient, get_session
@@ -28,7 +28,7 @@ def test_fk_raises_exception(client):
         email1 = Email(email="1@test.com")
         device1 = Device(pubkey='pubkeyNOAUTH', email='2@test.com', nonce='nonceNOAUTH'.encode('utf-8'), is_auth=False)
         session.add_all([email1, device1])
-        with pytest.raises(sa.exc.IntegrityError):  # fk check fails
+        with pytest.raises(IntegrityError):  # fk check fails
             session.commit()
 
 

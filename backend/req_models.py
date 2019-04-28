@@ -1,4 +1,3 @@
-import base64
 import uuid
 from dataclasses import dataclass
 from typing import Tuple, Dict
@@ -40,17 +39,17 @@ class RegisterRequest:
             print('validation err')
             return False
 
-    # returns an encrypted nonce and success bool
+    # saves hex(nonce) to db, returns an hex(encrypt(nonce)) and success bool
     def insert(self) -> Tuple[str, bool]:
-        nonce = base64.urlsafe_b64encode(get_random_bytes(16))
+        nonce = get_random_bytes(16)
         session = db.get_session()
         email = db.Email(email=self.email)
-        device = db.Device(pubkey=self.pubkey, email=self.email, nonce=nonce, is_auth=False)
+        device = db.Device(pubkey=self.pubkey, email=self.email, nonce=nonce.hex(), is_auth=False)
         session.add_all([email, device])
         try:
             session.commit()
-            encrypted_nonce = str(crypto.encrypt_rsa(nonce, self.pubkey))
-            return encrypted_nonce, True
+            hex_encrypted_nonce = crypto.encrypt_rsa(nonce, self.pubkey).hex()
+            return hex_encrypted_nonce, True
         except Exception as e:
             print(e)
             session.rollback()
@@ -61,7 +60,7 @@ class RegisterRequest:
 class VerifyRequest:
     email: str
     pubkey: str
-    nonce: str
+    nonce: str  # should receive hex(decrypt(fromhex(enc_nonce))) from trustzone
 
     def __init__(self, data: Dict[str, str]) -> None:
         self.email = data['email']
@@ -89,20 +88,22 @@ class VerifyRequest:
             print('validation err')
             return False
 
-    #TODO: make work
-    def insert(self) -> Tuple[str, bool]:
+    def insert(self) -> bool:
         session = db.get_session()
-        email = db.Email(email=self.email)
-        device = db.Device(pubkey=self.pubkey, email=self.email, nonce=nonce, is_auth=False)
-        session.add_all([email, device])
+        device = session.query(db.Device).filter(db.Device.pubkey == self.pubkey,
+                                                 db.Device.email == self.email,
+                                                 db.Device.nonce == self.nonce).first()
+        if device is None:
+            return False
+
+        device.is_auth = True
         try:
             session.commit()
-            encrypted_nonce = str(crypto.encrypt_rsa(nonce, self.pubkey))
-            return encrypted_nonce, True
+            return True
         except Exception as e:
             print(e)
             session.rollback()
-            return "", False
+            return False
 
 
 @dataclass

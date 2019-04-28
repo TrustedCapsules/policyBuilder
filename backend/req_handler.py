@@ -33,9 +33,9 @@ def verify_request(request: Request) -> Tuple[str, HTTPStatus]:
         return jsonify({"success": False, "msg": "Invalid register data"}), HTTPStatus.BAD_REQUEST
 
     verify_req = VerifyRequest(data)
-    nonce, ok = verify_req.insert()
+    ok = verify_req.insert()
     if not ok:
-        return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "msg": "DB verify failed"}), HTTPStatus.BAD_REQUEST
 
     return jsonify({"success": True, "msg": ""}), HTTPStatus.OK
 

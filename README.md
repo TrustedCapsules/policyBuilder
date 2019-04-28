@@ -19,6 +19,13 @@ pip3 install requirements.txt --user
 python3 server.py #runs the backend
 ```
 
+Nonce flow:
+- Server gets registration request
+- Server generates random byte nonce, saves hex(nonce) as a string
+- Server responds to client with enc_nonce = hex(pubkey(nonce)) 
+- Client sends dec_nonce = hex(decrypt(fromhex(enc_nonce)))
+- Server validates this in db
+
 Open your web browser to http://localhost:5000/
 
 ### Notes

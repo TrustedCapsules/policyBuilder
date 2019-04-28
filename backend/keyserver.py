@@ -19,7 +19,7 @@ def home():
 
 
 # input: application/json request in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
-# response: json in format of {success: true, "verification_nonce": "SOMENONCEHERE"}
+# response: json in format of {success: true, "verification_nonce": "ENC_NONCE_IN_HEX"}
 # send an email with a special token to email address passed in
 # adds the email to the emails table, pubkey email combo to the devices table
 # does not allow reregistration of email TODO: ask ivan
@@ -28,7 +28,7 @@ def register():
     return req_handler.register_request(request)
 
 
-# input: application/json in format of {"email": "a@a.com", "pubkey": "THISISAPUBKEY", "nonce": "DECRYPTEDNONCE"}
+# input: application/json in format of {"email": "a@a.com", "pubkey": "THISISAPUBKEY", "nonce": "DECRYPTED_NONCE_IN_HEX"}
 # response: json in format of {success: true, "msg": ""}
 @app.route('/verify', methods=['POST'])
 def verify():
