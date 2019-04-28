@@ -8,6 +8,7 @@ from jsonschema.exceptions import FormatError, ValidationError
 
 import crypto
 import db
+import mail
 
 
 @dataclass
@@ -49,6 +50,7 @@ class RegisterRequest:
         try:
             session.commit()
             hex_encrypted_nonce = crypto.encrypt_rsa(nonce, self.pubkey).hex()
+            mail.send_nonce(self.email, hex_encrypted_nonce)
             return hex_encrypted_nonce, True
         except Exception as e:
             print(e)
