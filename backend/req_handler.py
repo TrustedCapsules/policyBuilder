@@ -5,7 +5,7 @@ from typing import Tuple
 from flask import Request, jsonify, current_app
 from werkzeug.utils import secure_filename
 
-from req_models import CapsuleRequest, VerifyRequest, RegisterRequest
+from req_models import CapsuleRequest, VerifyRequest, RegisterRequest, DecryptRequest
 
 
 def register_request(request: Request) -> Tuple[str, HTTPStatus]:
@@ -33,7 +33,7 @@ def verify_request(request: Request) -> Tuple[str, HTTPStatus]:
         return jsonify({"success": False, "msg": "Invalid register data"}), HTTPStatus.BAD_REQUEST
 
     verify_req = VerifyRequest(data)
-    ok = verify_req.insert()
+    ok = verify_req.authorize()
     if not ok:
         return jsonify({"success": False, "msg": "DB verify failed"}), HTTPStatus.BAD_REQUEST
 
@@ -72,3 +72,19 @@ def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
 
         capsule_url = request.url + capsule_filename  # TODO: fix to generate proper url
         return jsonify({"success": True, "url": capsule_url})
+
+
+def decrypt_request(request: Request) -> Tuple[str, HTTPStatus]:
+    if not request.is_json:
+        return jsonify({"success": False, "msg": "Must send json"}), HTTPStatus.BAD_REQUEST
+
+    data: dict = request.get_json()
+    if not DecryptRequest.is_valid(data):
+        return jsonify({"success": False, "msg": "Invalid register data"}), HTTPStatus.BAD_REQUEST
+
+    decrypt_req = DecryptRequest(data)
+    key, ok = decrypt_req.get_key()
+    if not ok:
+        return jsonify({"success": False, "msg": "DB verify failed"}), HTTPStatus.BAD_REQUEST
+
+    return jsonify({"success": True, "key": key}), HTTPStatus.OK

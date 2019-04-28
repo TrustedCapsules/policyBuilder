@@ -1,7 +1,7 @@
 from flask import Flask, request, send_from_directory, send_file
 
+import db
 import req_handler
-from db import init_db as init_db1
 
 app = Flask(__name__)
 app.config['DATABASE'] = 'db.sqlite'
@@ -18,7 +18,7 @@ def home():
     return send_file('html/index.html')
 
 
-# input: application/json request in format of {"email": "bob@email.com", "pubkey": "THISISAPUBKEY"}
+# input: application/json request in format of {"email": "bob@email.com", "pubkey": "EXAMPLE_PUBKEY"}
 # response: json in format of {success: true, "verification_nonce": "ENC_NONCE_IN_HEX"}
 # send an email with a special token to email address passed in
 # adds the email to the emails table, pubkey email combo to the devices table
@@ -28,7 +28,7 @@ def register():
     return req_handler.register_request(request)
 
 
-# input: application/json of {"email": "a@a.com", "pubkey": "THISISAPUBKEY", "nonce": "DECRYPTED_NONCE_IN_HEX"}
+# input: application/json of {"email": "a@a.com", "pubkey": "EXAMPLE_PUBKEY", "nonce": "DECRYPTED_NONCE_IN_HEX"}
 # response: json in format of {success: true, "msg": ""}
 @app.route('/verify', methods=['POST'])
 def verify():
@@ -37,11 +37,19 @@ def verify():
 
 # input: multipart/form request in format of
 # {"email1": "a@a.com", "email2": "b@b.com", "inviteRecipients": "true", "file.lua": "contents"}
-# response: json in format of {success: true, "url": "SERVERIP:PORT/capsules/capsule1.cap"}
+# response: json in format of {success: true, "url": "SERVER_IP:PORT/capsules/capsule1.cap"}
 # sends an email with invitation
 @app.route('/capsule', methods=['POST'])
 def capsule():
     return req_handler.capsule_request(request)
+
+
+# input: multipart/form request in format of
+# {"uuid": "32CHAR_HEX_UUID", "pubkey": "EXAMPLE_PUBKEY"}
+# response: json in format of {success: true, "key": "DECRYPT_KEY"}
+@app.route('/decrypt', methods=['POST'])
+def decrypt():
+    return req_handler.decrypt_request(request)
 
 
 @app.teardown_appcontext
@@ -53,7 +61,7 @@ def close_connection(exception):
 
 @app.before_first_request
 def init_db():
-    init_db1()
+    db.init_db()
 
 
 if __name__ == "__main__":

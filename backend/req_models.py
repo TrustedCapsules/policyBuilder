@@ -34,10 +34,10 @@ class RegisterRequest:
             validate(instance=req, schema=schema)
             return True
         except FormatError:
-            print('format err')
+            print('jsonschema format err')
             return False
         except ValidationError:
-            print('validation err')
+            print('jsonschema validation err')
             return False
 
     # saves hex(nonce) to db, returns an hex(encrypt(nonce)) and success bool
@@ -56,6 +56,8 @@ class RegisterRequest:
             print(e)
             session.rollback()
             return "", False
+        finally:
+            session.close()
 
 
 @dataclass
@@ -84,18 +86,19 @@ class VerifyRequest:
             validate(instance=req, schema=schema)
             return True
         except FormatError:
-            print('format err')
+            print('jsonschema format err')
             return False
         except ValidationError:
-            print('validation err')
+            print('jsonschema validation err')
             return False
 
-    def insert(self) -> bool:
+    def authorize(self) -> bool:
         session = db.get_session()
         device = session.query(db.Device).filter(db.Device.pubkey == self.pubkey,
                                                  db.Device.email == self.email,
                                                  db.Device.nonce == self.nonce).first()
         if device is None:
+            session.close()
             return False
 
         device.is_auth = True
@@ -106,6 +109,8 @@ class VerifyRequest:
             print(e)
             session.rollback()
             return False
+        finally:
+            session.close()
 
 
 @dataclass
@@ -139,10 +144,10 @@ class CapsuleRequest:
             validate(instance=req, schema=schema)
             return True
         except FormatError:
-            print('format err')
+            print('jsonschema format err')
             return False
         except ValidationError:
-            print('validation err')
+            print('jsonschema validation err')
             return False
 
     # returns a file path to a generated capsule, and success bool
@@ -163,3 +168,59 @@ class CapsuleRequest:
             print(e)
             session.rollback()
             return "", False
+        finally:
+            session.close()
+
+
+@dataclass
+class DecryptRequest:
+    uuid: str  # stored in capsule file
+    pubkey: str
+
+    def __init__(self, data: Dict[str, str]) -> None:
+        self.uuid = data['uuid']
+        self.pubkey = data['pubkey']
+
+    @staticmethod
+    def is_valid(req: Dict[str, str]) -> bool:
+        schema = {
+            "type": "object",
+            "properties": {
+                "uuid": {"type": "string"},
+                "pubkey": {"type": "string"},
+            }
+        }
+
+        try:
+            validate(instance=req, schema=schema)
+            return True
+        except FormatError:
+            print('jsonschema format err')
+            return False
+        except ValidationError:
+            print('jsonschema validation err')
+            return False
+
+    # returns a file path to a generated capsule, and success bool
+    def get_key(self) -> Tuple[str, bool]:
+        session = db.get_session()
+        capsule = session.query(db.Capsule, db.CapsuleRecipient, db.Device).filter(
+            db.Capsule.uuid == self.uuid,
+            db.Capsule.uuid == db.CapsuleRecipient.uuid,
+            db.CapsuleRecipient.email == db.Device.email,
+            db.Device.pubkey == self.pubkey,
+            db.Device.is_auth is True).first()
+        if capsule is None:
+            session.close()
+            return "", False
+
+        capsule.is_auth = True
+        try:
+            session.close()
+            return "", True
+        except Exception as e:
+            print(e)
+            session.rollback()
+            return "", False
+        finally:
+            session.close()
