@@ -51,29 +51,32 @@ def allowed_file(filename):
 # saves the policy and data under the same named folder for cgen
 # returns capsule_name for cgen to run on
 # see cgen.py for more info
-def prep_capsule(lua_file: FileStorage, payload_file: FileStorage) -> str:
-    capsule_name = str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + hex(random.getrandbits(16))
+def prep_capsule(policy_file: FileStorage, attachment: FileStorage) -> str:
+    capsule_name = str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + '__' + hex(random.getrandbits(16))
     with current_app.app_context():
         work_dir = current_app.config['CAPSULE_TEMP_WORK_PATH']
         capsule_path = os.path.join(work_dir, capsule_name)
         os.mkdir(capsule_path)
-        lua_file.save(os.path.join(capsule_path, capsule_name + '.policy', capsule_name))
-        lua_file.close()
-        payload_file.save(os.path.join(capsule_path, capsule_name + '.data', capsule_name))
-        payload_file.close()
+        policy_file.save(os.path.join(capsule_path, capsule_name + '.policy'))
+        policy_file.close()
+        attachment.save(os.path.join(capsule_path, capsule_name + '.data'))
+        attachment.close()
+        with open(os.path.join(capsule_path, capsule_name + '.kvstore'), 'w') as file:
+            file.write('location: NSS Lab, Vancouver, BC')
+            file.close()
+
         return capsule_name
 
 
 def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
     with current_app.app_context():
-        capsule_name = None
-        for name_field, file in request.files.items():
-            if file.filename == '' or not allowed_file(file.filename):
-                continue
 
-            capsule_name = prep_capsule(file) #FIXME
-            break
+        if 'policy' not in request.files or \
+                'attachment' not in request.files or \
+                not allowed_file(request.files['policy'].filename):
+            return jsonify({"success": False, "msg": "Invalid upload"}), HTTPStatus.BAD_REQUEST
 
+        capsule_name = prep_capsule(request.files['policy'], request.files['attachment'])
         if not capsule_name:
             return jsonify({"success": False, "msg": "No lua file"}), HTTPStatus.BAD_REQUEST
 

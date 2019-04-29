@@ -120,17 +120,17 @@ class VerifyRequest:
 class CapsuleRequest:
     email1: str
     email2: str
-    policy_filename: str
+    capsule_name: str
     invite_recipients: bool
 
-    def __init__(self, data: Dict[str, str], policy_filename: str) -> None:
+    def __init__(self, data: Dict[str, str], capsule_name: str) -> None:
         self.email1 = data['email1']
         self.email2 = data['email2']
-        self.policy_filename = policy_filename
+        self.capsule_name = capsule_name
         self.invite_recipients = (data['inviteRecipients'] == 'true')
 
     @staticmethod
-    def is_valid(req: Dict[str, str], policy_filename: str) -> bool:
+    def is_valid(req: Dict[str, str], capsule_name: str) -> bool:
         schema = {
             "type": "object",
             "properties": {
@@ -144,7 +144,10 @@ class CapsuleRequest:
         }
 
         with current_app.app_context():
-            if not os.path.isfile(os.path.join(current_app.config['UPLOADED_LUA_PATH'], policy_filename)):
+            capsule_path = os.path.join(current_app.config['CAPSULE_TEMP_WORK_PATH'], capsule_name)
+            if not os.path.isdir(capsule_path) or \
+                    not os.path.isfile(os.path.join(capsule_path, capsule_name + '.policy')) or \
+                    not os.path.isfile(os.path.join(capsule_path, capsule_name + '.data')):
                 return False
 
         try:
@@ -160,7 +163,7 @@ class CapsuleRequest:
     # returns a file path to a generated capsule, and success bool
     def insert(self) -> Tuple[str, bool]:
         with current_app.app_context():
-            out_file_name, ok = cgen.execute_cgen(self.policy_filename)
+            out_file_name, ok = cgen.execute_cgen(self.capsule_name)
             if not ok:
                 return "", False
 

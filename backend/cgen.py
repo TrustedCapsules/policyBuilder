@@ -8,8 +8,8 @@ from flask import current_app
 # see https://github.com/TrustedCapsules/optee_app/tree/master/capsule_gen/cmd to build the binary
 
 # generates the upload file
-# returns the generate file name, True on success, False on failure
-def execute_cgen(lua_file_name: str) -> Tuple[str, bool]:
+# returns the generated filename, True on success, False on failure
+def execute_cgen(capsule_name: str) -> Tuple[str, bool]:
     """
     Usage: cgen <op> -n <capsule name> [-p path] [-o outpath] [-s SECTION]
 
@@ -28,16 +28,14 @@ def execute_cgen(lua_file_name: str) -> Tuple[str, bool]:
             -s      section to decode [Default: all] [Options: header, policy, kv, log, data]
     """
     with current_app.app_context():
-        cgen_path = os.path.join(current_app.config['CGEN_PATH'], 'cgen')
-        upload_path = current_app.config['UPLOADED_LUA_PATH']
+        cgen_bin = os.path.join(current_app.config['CGEN_PATH'], 'cgen')
+        work_dir = current_app.config['CAPSULE_TEMP_WORK_PATH']
         output_path = current_app.config['GENERATED_CAPSULES_PATH']
-        current_time = str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-        out_file_name = 'cap_' + current_time + '.capsule'
-        cmd = f"{cgen_path} encode -n {lua_file_name} -p {upload_path}/ -o {output_path}/"
+        cmd = f"{cgen_bin} encode -n {capsule_name} -p {work_dir}/ -o {output_path}/"
         ret_val = os.system(cmd)
         print("cgen cmd: ", cmd)
         print("cgen retval: ", ret_val)
-        return out_file_name, (ret_val is 0)
+        return capsule_name + '.capsule', (ret_val is 0)
 
 
 # returns the hex uuid
