@@ -22,7 +22,6 @@ function CapsuleForm() {
     const [attachment, setAttachment] = React.useState(null);
 
     const formSubmit = React.useCallback((event: any) => {
-        console.log('submit');
         const req = superagent.post('http://127.0.0.1:5001/capsule')
             .field({email1})
             .field({email2})
