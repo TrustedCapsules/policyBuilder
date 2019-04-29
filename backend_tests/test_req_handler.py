@@ -10,7 +10,6 @@ from backend import keyserver, db
 def client():
     db_fd, keyserver.app.config['DATABASE'] = tempfile.mkstemp()
     keyserver.app.config['TESTING'] = True
-    keyserver.app.config['UPLOAD_FOLDER'] = '../uploads'
     client = keyserver.app.test_client()
 
     with keyserver.app.app_context():

@@ -80,8 +80,9 @@ def test_decrypt_request(client):
 
         # make capsule
         cap_form_data = {"email1": "a@email.com",
-                     "email2": "b@email.com",
-                     "inviteRecipients": "true"}
+                         "email2": "b@email.com",
+                         "inviteRecipients": "true"}
+        #TODO upload a lua file
         cap_req = CapsuleRequest(cap_form_data, "A FILEPATH HERE")
         capsule_filename, ok = cap_req.insert()
         assert capsule_filename != '' and ok
@@ -89,8 +90,7 @@ def test_decrypt_request(client):
         # request key
         uuid = "FIXME"
         decrypt_form_data = {"uuid": uuid,
-                         "pubkey": open("demo_rsakey.pub", "r").read()}
+                             "pubkey": open("demo_rsakey.pub", "r").read()}
         decrypt_req = DecryptRequest(decrypt_form_data)
         hex_key, ok = decrypt_req.get_key()
         assert len(hex_key) > 0 and ok
-

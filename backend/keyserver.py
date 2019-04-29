@@ -5,7 +5,10 @@ import req_handler
 
 app = Flask(__name__)
 app.config['DATABASE'] = 'db.sqlite'
-app.config['TESTING'] = True
+app.config['TESTING'] = True #FIXME make false
+app.config['CGEN_PATH'] = './backend/cgen'
+app.config['GENERATED_CAPSULES_PATH'] = './backend'
+app.config['UPLOAD_PATH'] = '../uploads'
 
 
 @app.route('/dist/<path:path>')

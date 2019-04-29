@@ -78,7 +78,7 @@ def get_session() -> sa.orm.session.Session:
 
 def init_db() -> None:
     with current_app.app_context():
-        if current_app.config['TESTING']:
+        if current_app.config.get('TESTING', None) is True:
             logging.basicConfig()
             logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
             if os.path.isfile(current_app.config['DATABASE']):

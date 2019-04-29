@@ -196,3 +196,4 @@ typings/
 .idea/
 uploads/
 db.sqlite
+scratch.py

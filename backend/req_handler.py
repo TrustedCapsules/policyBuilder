@@ -54,7 +54,7 @@ def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
                 continue
 
             filename = secure_filename(file.filename)
-            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(current_app.config['UPLOAD_PATH'], filename))
             is_lua_uploaded = True
             break
 
