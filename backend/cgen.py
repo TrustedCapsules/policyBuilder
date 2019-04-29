@@ -11,16 +11,21 @@ from flask import current_app
 # returns the generate file name, True on success, False on failure
 def execute_cgen(lua_file_name: str) -> Tuple[str, bool]:
     """
-    cgen <op> -n <capsule name> [-p path] [-o outpath] [-s SECTION]
-      encode   encode plaintext policy, data, log, kvstore into capsule
-            -n      capsule name
+    Usage: cgen <op> -n <capsule name> [-p path] [-o outpath] [-s SECTION]
+
+      Expected structure with -n NAME:
+      path flag must contain folder NAME
+      and contain NAME.kvstore, NAME.data, NAME.policy
+
+      encode        encodes a plaintext policy, data, log, kvstore into capsule
+            -n      capsule name [Required]
             -u      capsule uuid [Default: ffffffffffffffffffffffffffffffff]
-            -p      path, default local
-            -o      output path, default local
-      decode        decode capsule into plaintext policy, data, log, kvstore
-            -n      capsule name
-            -p      path, default local
-            -s      section to decode
+            -p      path [Default: ./]
+            -o      output path [Default: ./]
+      decode        decodes capsule into plaintext policy, data, log, kvstore
+            -n      capsule name [Required]
+            -p      path [Default: ./]
+            -s      section to decode [Default: all] [Options: header, policy, kv, log, data]
     """
     with current_app.app_context():
         cgen_path = os.path.join(current_app.config['CGEN_PATH'], 'cgen')

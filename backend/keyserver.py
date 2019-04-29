@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request, send_from_directory, send_file
 
 import db
@@ -7,6 +9,7 @@ app = Flask(__name__)
 app.config['DATABASE'] = 'db.sqlite'
 app.config['TESTING'] = True  # FIXME make false
 app.config['CGEN_PATH'] = 'backend'
+app.config['CAPSULE_TEMP_WORK_PATH'] = '/tmp/keyserver'
 app.config['GENERATED_CAPSULES_PATH'] = 'generated_capsules'
 app.config['UPLOADED_LUA_PATH'] = 'uploads'
 
@@ -64,6 +67,7 @@ def close_connection(exception):
 
 @app.before_first_request
 def init_db():
+    os.makedirs(app.config['CAPSULE_TEMP_WORK_PATH'], exist_ok=True)
     db.init_db()
 
 

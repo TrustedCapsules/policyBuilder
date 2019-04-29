@@ -3,9 +3,10 @@ import tempfile
 
 import pytest
 
+import cgen
 import crypto
 from backend import keyserver
-from backend.req_models import RegisterRequest, VerifyRequest, CapsuleRequest
+from backend.req_models import RegisterRequest, VerifyRequest, CapsuleRequest, DecryptRequest
 
 
 @pytest.fixture
@@ -85,14 +86,14 @@ def test_decrypt_request(client):
                          "inviteRecipients": "true",
                          "demo.lua": open("backend_tests/demo.lua", "rb")}
         # TODO upload a lua file
-        # cap_req = CapsuleRequest(cap_form_data, "demo.lua")
-        # capsule_filename, ok = cap_req.insert()
-        # assert capsule_filename != '' and ok
-        #
-        # # request key
-        # uuid = cgen.get_capsule_uuid(capsule_filename)
-        # decrypt_form_data = {"uuid": uuid,
-        #                      "pubkey": open("backend_tests/demo_rsakey.pub", "r").read()}
-        # decrypt_req = DecryptRequest(decrypt_form_data)
-        # hex_key, ok = decrypt_req.get_key()
-        # assert len(hex_key) > 0 and ok
+        cap_req = CapsuleRequest(cap_form_data, "demo.lua")
+        capsule_filename, ok = cap_req.insert()
+        assert capsule_filename != '' and ok
+
+        # request key
+        uuid = cgen.get_capsule_uuid(capsule_filename)
+        decrypt_form_data = {"uuid": uuid,
+                             "pubkey": open("backend_tests/demo_rsakey.pub", "r").read()}
+        decrypt_req = DecryptRequest(decrypt_form_data)
+        hex_key, ok = decrypt_req.get_key()
+        assert len(hex_key) > 0 and ok
