@@ -1,3 +1,4 @@
+import datetime
 import os
 from http import HTTPStatus
 from typing import Tuple
@@ -53,7 +54,8 @@ def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
             if file.filename == '' or not allowed_file(file.filename):
                 continue
 
-            filename = secure_filename(file.filename)
+            current_time = str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+            filename = 'pol_' + current_time + '.lua'
             file.save(os.path.join(current_app.config['UPLOADED_LUA_PATH'], filename))
             is_lua_uploaded = True
             break

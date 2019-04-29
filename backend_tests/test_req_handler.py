@@ -27,7 +27,7 @@ def test_register_request(client):
         assert test_session.query(db.Device).count() == 0
         test_session.close()
         resp = client.post('/register', json={"email": "bob@email.com",
-                                              "pubkey": open("demo_rsakey.pub", "r").read()})
+                                              "pubkey": open("backend_tests/demo_rsakey.pub", "r").read()})
 
         test_session = db.get_session()
         assert resp.status_code == 200
@@ -48,7 +48,7 @@ def test_capsule_request(client):
                            data={"email1": "a@email.com",
                                  "email2": "b@email.com",
                                  "inviteRecipients": "true",
-                                 "demo.lua": open("demo.lua", "rb")})
+                                 "demo.lua": open("backend_tests/demo.lua", "rb")})
 
         assert resp.status_code == 200
         test_session = db.get_session()

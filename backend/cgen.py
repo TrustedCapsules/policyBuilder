@@ -23,12 +23,12 @@ def execute_cgen(lua_file_name: str, output_dir: str) -> Tuple[str, bool]:
             -s      section to decode
     """
     with current_app.app_context():
-        cgen_path = current_app.config['CGEN_PATH']
+        cgen_path = os.path.join(current_app.config['CGEN_PATH'], 'cgen')
         upload_path = current_app.config['UPLOADED_LUA_PATH']
         current_time = str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-        out_file_name = 'capsule_' + current_time
+        out_file_name = 'cap_' + current_time + '.capsule'
         ret_val = os.system(
-            f"{cgen_path}/cgen encode -n {lua_file_name} -p {upload_path} -o {output_dir}/{out_file_name}")
+            f"{cgen_path} encode -n {lua_file_name} -p {upload_path} -o {output_dir}/{out_file_name}")
         return out_file_name, (ret_val is 0)
 
 
