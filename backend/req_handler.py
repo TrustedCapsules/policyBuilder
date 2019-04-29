@@ -4,7 +4,6 @@ from http import HTTPStatus
 from typing import Tuple
 
 from flask import Request, jsonify, current_app
-from werkzeug.utils import secure_filename
 
 from req_models import CapsuleRequest, VerifyRequest, RegisterRequest, DecryptRequest
 
@@ -55,7 +54,7 @@ def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
                 continue
 
             current_time = str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-            filename = 'pol_' + current_time + '.lua'
+            filename = current_time + '.policy'
             file.save(os.path.join(current_app.config['UPLOADED_LUA_PATH'], filename))
             is_lua_uploaded = True
             break

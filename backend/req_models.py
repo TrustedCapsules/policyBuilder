@@ -160,6 +160,10 @@ class CapsuleRequest:
     # returns a file path to a generated capsule, and success bool
     def insert(self) -> Tuple[str, bool]:
         with current_app.app_context():
+            out_file_name, ok = cgen.execute_cgen(self.policy_filename)
+            if not ok:
+                return "", False
+
             session = db.get_session()
             cap_uuid = uuid.uuid4().hex
             recip1 = db.CapsuleRecipient(uuid=cap_uuid, email=self.email1)
@@ -167,10 +171,6 @@ class CapsuleRequest:
             decrypt_key = get_random_bytes(16).hex()
             cap = db.Capsule(uuid=cap_uuid, decrypt_key=decrypt_key, recipients=[recip1, recip2])
             session.add_all([cap, recip1, recip2])
-
-            out_file_name, ok = cgen.execute_cgen(self.policy_filename, current_app.config['UPLOADED_LUA_PATH'])
-            if not ok:
-                return "", False
             try:
                 session.commit()
                 return out_file_name, True
