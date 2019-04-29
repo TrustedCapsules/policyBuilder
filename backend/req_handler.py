@@ -52,7 +52,10 @@ def allowed_file(filename):
 # returns capsule_name for cgen to run on
 # see cgen.py for more info
 def prep_capsule(policy_file: FileStorage, attachment: FileStorage) -> str:
-    capsule_name = str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + '__' + hex(random.getrandbits(16))
+    # NOTE: KEYSERVER prefix is found in https://github.com/TrustedCapsules/optee_app/blob/master/common/capsuleKeys.h
+    # NOTE: Validation in https://github.com/TrustedCapsules/optee_app/blob/master/capsule_gen/cmd/cgen/gen_helper.c
+    capsule_name = 'KEYSERVER_' + str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + '__' + hex(
+        random.getrandbits(16))
     with current_app.app_context():
         work_dir = current_app.config['CAPSULE_TEMP_WORK_PATH']
         capsule_path = os.path.join(work_dir, capsule_name)

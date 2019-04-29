@@ -1,5 +1,6 @@
 import datetime
 import os
+import subprocess
 from typing import Tuple
 
 from flask import current_app
@@ -25,16 +26,14 @@ def execute_cgen(capsule_name: str) -> Tuple[str, bool]:
       decode        decodes capsule into plaintext policy, data, log, kvstore
             -n      capsule name [Required]
             -p      path [Default: ./]
-            -s      section to decode [Default: all] [Options: header, policy, kv, log, data]
+            -s      section to decode [Default: all] [Options: header, policy, kvstore, log, data]
     """
     with current_app.app_context():
         cgen_bin = os.path.join(current_app.config['CGEN_PATH'], 'cgen')
-        work_dir = current_app.config['CAPSULE_TEMP_WORK_PATH']
+        work_dir = os.path.join(current_app.config['CAPSULE_TEMP_WORK_PATH'], capsule_name)
         output_path = current_app.config['GENERATED_CAPSULES_PATH']
         cmd = f"{cgen_bin} encode -n {capsule_name} -p {work_dir}/ -o {output_path}/"
-        ret_val = os.system(cmd)
-        print("cgen cmd: ", cmd)
-        print("cgen retval: ", ret_val)
+        ret_val = subprocess.run(cmd, shell=True).returncode
         return capsule_name + '.capsule', (ret_val is 0)
 
 

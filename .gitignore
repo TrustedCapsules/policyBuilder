@@ -197,3 +197,4 @@ typings/
 uploads/
 db.sqlite
 scratch.py
+generated_capsules/*
