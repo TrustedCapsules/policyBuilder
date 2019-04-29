@@ -54,7 +54,7 @@ def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
                 continue
 
             filename = secure_filename(file.filename)
-            file.save(os.path.join(current_app.config['UPLOAD_PATH'], filename))
+            file.save(os.path.join(current_app.config['UPLOADED_LUA_PATH'], filename))
             is_lua_uploaded = True
             break
 
@@ -62,7 +62,7 @@ def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
             return jsonify({"success": False, "msg": "No lua file"}), HTTPStatus.BAD_REQUEST
 
         data = request.form.to_dict()
-        if not CapsuleRequest.is_valid(data):
+        if not CapsuleRequest.is_valid(data, filename):
             return jsonify({"success": False, "msg": "Invalid form data"}), HTTPStatus.BAD_REQUEST
 
         cap_req = CapsuleRequest(request.form, filename)

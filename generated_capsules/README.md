@@ -1,0 +1,1 @@
+A folder to store generated capsules for clients to download

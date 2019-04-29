@@ -1,11 +1,14 @@
+import os
 import uuid
 from dataclasses import dataclass
 from typing import Tuple, Dict
 
 from Cryptodome.Random import get_random_bytes
+from flask import current_app
 from jsonschema import validate
 from jsonschema.exceptions import FormatError, ValidationError
 
+import cgen
 import crypto
 import db
 import mail
@@ -127,7 +130,7 @@ class CapsuleRequest:
         self.invite_recipients = (data['inviteRecipients'] == 'true')
 
     @staticmethod
-    def is_valid(req: Dict[str, str]) -> bool:
+    def is_valid(req: Dict[str, str], policy_filename: str) -> bool:
         schema = {
             "type": "object",
             "properties": {
@@ -139,6 +142,10 @@ class CapsuleRequest:
                 },  # should be bool, html makes it a string
             }
         }
+
+        with current_app.app_context():
+            if not os.path.isfile(os.path.join(current_app.config['UPLOADED_LUA_PATH'], policy_filename)):
+                return False
 
         try:
             validate(instance=req, schema=schema)
@@ -152,24 +159,27 @@ class CapsuleRequest:
 
     # returns a file path to a generated capsule, and success bool
     def insert(self) -> Tuple[str, bool]:
-        session = db.get_session()
-        cap_uuid = uuid.uuid4().hex
-        recip1 = db.CapsuleRecipient(uuid=cap_uuid, email=self.email1)
-        recip2 = db.CapsuleRecipient(uuid=cap_uuid, email=self.email2)
-        decrypt_key = get_random_bytes(16).hex()
-        cap = db.Capsule(uuid=cap_uuid, decrypt_key=decrypt_key, recipients=[recip1, recip2])
-        session.add_all([cap, recip1, recip2])
+        with current_app.app_context():
+            session = db.get_session()
+            cap_uuid = uuid.uuid4().hex
+            recip1 = db.CapsuleRecipient(uuid=cap_uuid, email=self.email1)
+            recip2 = db.CapsuleRecipient(uuid=cap_uuid, email=self.email2)
+            decrypt_key = get_random_bytes(16).hex()
+            cap = db.Capsule(uuid=cap_uuid, decrypt_key=decrypt_key, recipients=[recip1, recip2])
+            session.add_all([cap, recip1, recip2])
 
-        # TODO: call cgen code here
-        try:
-            session.commit()
-            return "SOME GENERATED CAPSULE FILENAME", True
-        except Exception as e:
-            print(e)
-            session.rollback()
-            return "", False
-        finally:
-            session.close()
+            out_file_name, ok = cgen.execute_cgen(self.policy_filename, current_app.config['UPLOADED_LUA_PATH'])
+            if not ok:
+                return "", False
+            try:
+                session.commit()
+                return out_file_name, True
+            except Exception as e:
+                print(e)
+                session.rollback()
+                return "", False
+            finally:
+                session.close()
 
 
 @dataclass

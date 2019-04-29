@@ -3,6 +3,7 @@ import tempfile
 
 import pytest
 
+import cgen
 import crypto
 from backend import keyserver
 from backend.req_models import RegisterRequest, VerifyRequest, CapsuleRequest, DecryptRequest
@@ -12,6 +13,7 @@ from backend.req_models import RegisterRequest, VerifyRequest, CapsuleRequest, D
 def client():
     db_fd, keyserver.app.config['DATABASE'] = tempfile.mkstemp()
     keyserver.app.config['TESTING'] = True
+    keyserver.app.config['UPLOADED_LUA_PATH'] = 'backend_tests'
     client = keyserver.app.test_client()
 
     with keyserver.app.app_context():
@@ -54,8 +56,8 @@ def test_capsule_request(client):
         form_data = {"email1": "a@email.com",
                      "email2": "b@email.com",
                      "inviteRecipients": "true"}
-        assert CapsuleRequest.is_valid(form_data)
-        cap_req = CapsuleRequest(form_data, "A FILEPATH HERE")
+        assert CapsuleRequest.is_valid(form_data, 'demo.lua')
+        cap_req = CapsuleRequest(form_data, 'demo.lua')
         capsule_filename, ok = cap_req.insert()
 
         assert capsule_filename != '' and ok
@@ -83,12 +85,12 @@ def test_decrypt_request(client):
                          "email2": "b@email.com",
                          "inviteRecipients": "true"}
         #TODO upload a lua file
-        cap_req = CapsuleRequest(cap_form_data, "A FILEPATH HERE")
+        cap_req = CapsuleRequest(cap_form_data, "demo.lua")
         capsule_filename, ok = cap_req.insert()
         assert capsule_filename != '' and ok
 
         # request key
-        uuid = "FIXME"
+        uuid = cgen.get_capsule_uuid(capsule_filename)
         decrypt_form_data = {"uuid": uuid,
                              "pubkey": open("demo_rsakey.pub", "r").read()}
         decrypt_req = DecryptRequest(decrypt_form_data)
