@@ -21,7 +21,7 @@ def send_js(path):
 
 @app.route("/")
 def home():
-    return send_file('html/index.html')
+    return send_file('../html/index.html')
 
 
 # input: application/json request in format of {"email": "bob@email.com", "pubkey": "EXAMPLE_PUBKEY"}
