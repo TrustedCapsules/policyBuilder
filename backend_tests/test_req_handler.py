@@ -48,7 +48,8 @@ def test_capsule_request(client):
                            data={"email1": "a@email.com",
                                  "email2": "b@email.com",
                                  "inviteRecipients": "true",
-                                 "demo.lua": open("backend_tests/demo.lua", "rb")})
+                                 "policy": open("backend_tests/demo.lua", "rb"),
+                                 "data": open("backend_tests/demo.data", "rb")})
 
         assert resp.status_code == 200
         test_session = db.get_session()

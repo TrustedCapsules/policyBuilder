@@ -1,4 +1,3 @@
-import DragList from './DragList'
 import * as React from 'react';
 import {useDropzone} from 'react-dropzone'
 import * as superagent from "superagent";
@@ -19,9 +18,9 @@ function CapsuleForm() {
     const [email2, setEmail2] = React.useState("");
     const [inviteRecipients, setInviteRecipients] = React.useState(false);
     const [policy, setPolicy] = React.useState(null);
-    const [attachment, setAttachment] = React.useState(null);
+    const [data, setData] = React.useState(null);
 
-    const formSubmit = React.useCallback((event: any) => {
+    const formSubmit = React.useCallback(() => {
         const req = superagent.post('http://127.0.0.1:5001/capsule')
             .field({email1})
             .field({email2})
@@ -30,18 +29,18 @@ function CapsuleForm() {
         if (policy !== null) {
             req.attach("policy", policy);
         }
-        if (attachment !== null) {
-            req.attach("attachment", attachment);
+        if (data !== null) {
+            req.attach("data", data);
         }
         req.end();
-    }, [email1, email2, inviteRecipients, policy, attachment]);
+    }, [email1, email2, inviteRecipients, policy, data]);
 
     const {getRootProps: getRootPropsPolicy, getInputProps: getInputPropsPolicy, isDragActive: isDragActivePolicy} = useDropzone({
         onDrop: React.useCallback((acceptedFiles: File[]) => setPolicy(acceptedFiles[0]), [policy])
     });
 
-    const {getRootProps: getRootPropsAttachment, getInputProps: getInputPropsAttachment, isDragActive: isDragActiveAttachment} = useDropzone({
-        onDrop: React.useCallback((acceptedFiles: File[]) => setAttachment(acceptedFiles[0]), [attachment])
+    const {getRootProps: getRootPropsData, getInputProps: getInputPropsData, isDragActive: isDragActiveData} = useDropzone({
+        onDrop: React.useCallback((acceptedFiles: File[]) => setData(acceptedFiles[0]), [data])
     });
 
     return (
@@ -82,11 +81,11 @@ function CapsuleForm() {
                     }
                 </label>
             </div>
-            <div {...getRootPropsAttachment()}>
-                <label> Attachment
-                    <input {...getInputPropsAttachment()} />
+            <div {...getRootPropsData()}>
+                <label> Data
+                    <input {...getInputPropsData()} />
                     {
-                        isDragActiveAttachment ?
+                        isDragActiveData ?
                             <>
                                 <p>Release to upload your <strong>attachment</strong></p>
                                 <FontAwesomeIcon icon={faFileUpload} size="2x"/>
