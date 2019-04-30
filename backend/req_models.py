@@ -163,12 +163,12 @@ class CapsuleRequest:
     # returns a file path to a generated capsule, and success bool
     def insert(self) -> Tuple[str, bool]:
         with current_app.app_context():
-            out_file_name, ok = cgen.execute_cgen(self.capsule_name)
+            cap_uuid = uuid.uuid4().hex
+            out_file_name, ok = cgen.execute_cgen(self.capsule_name, cap_uuid)
             if not ok:
                 return "", False
 
             session = db.get_session()
-            cap_uuid = uuid.uuid4().hex
             recip1 = db.CapsuleRecipient(uuid=cap_uuid, email=self.email1)
             recip2 = db.CapsuleRecipient(uuid=cap_uuid, email=self.email2)
             decrypt_key = get_random_bytes(16).hex()

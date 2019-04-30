@@ -10,13 +10,19 @@ app.config['DATABASE'] = 'db.sqlite'
 app.config['TESTING'] = True  # FIXME make false
 app.config['CGEN_PATH'] = 'backend'
 app.config['CAPSULE_TEMP_WORK_PATH'] = '/tmp/keyserver'
-app.config['GENERATED_CAPSULES_PATH'] = './generated_capsules'
+app.config['GENERATED_CAPSULES_PATH'] = 'generated_capsules'
 app.config['UPLOADED_LUA_PATH'] = 'uploads'
 
 
-@app.route('/dist/<path:path>')
-def send_js(path):
-    return send_from_directory('dist', path)
+@app.route('/dist/<path:filename>')
+def send_js(filename):
+    return send_from_directory('dist', filename)
+
+
+@app.route('/generated_capsules/<path:filename>')
+def send_final_capsule(filename):
+    abs_dir = os.path.join(os.getcwd(), app.config['GENERATED_CAPSULES_PATH'])
+    return send_from_directory(abs_dir, filename, as_attachment=True)
 
 
 @app.route("/")

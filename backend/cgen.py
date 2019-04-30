@@ -10,7 +10,7 @@ from flask import current_app
 
 # generates the upload file
 # returns the generated filename, True on success, False on failure
-def execute_cgen(capsule_name: str) -> Tuple[str, bool]:
+def execute_cgen(capsule_name: str, uuid: str) -> Tuple[str, bool]:
     """
     Usage: cgen <op> -n <capsule name> [-p path] [-o outpath] [-s SECTION]
 
@@ -32,7 +32,7 @@ def execute_cgen(capsule_name: str) -> Tuple[str, bool]:
         cgen_bin = os.path.join(current_app.config['CGEN_PATH'], 'cgen')
         work_dir = os.path.join(current_app.config['CAPSULE_TEMP_WORK_PATH'], capsule_name)
         output_path = current_app.config['GENERATED_CAPSULES_PATH']
-        cmd = f"{cgen_bin} encode -n {capsule_name} -p {work_dir}/ -o {output_path}/"
+        cmd = f"{cgen_bin} encode -n {capsule_name} -p {work_dir}/ -o {output_path}/ -u {uuid}"
         ret_val = subprocess.run(cmd, shell=True).returncode
         return capsule_name + '.capsule', (ret_val is 0)
 

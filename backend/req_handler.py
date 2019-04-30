@@ -51,7 +51,7 @@ def allowed_file(filename):
 # saves the policy and data under the same named folder for cgen
 # returns capsule_name for cgen to run on
 # see cgen.py for more info
-def prep_capsule(policy_file: FileStorage, attachment: FileStorage) -> str:
+def prep_capsule(policy_file: FileStorage, data_file: FileStorage) -> str:
     # NOTE: KEYSERVER prefix is found in https://github.com/TrustedCapsules/optee_app/blob/master/common/capsuleKeys.h
     # NOTE: Validation in https://github.com/TrustedCapsules/optee_app/blob/master/capsule_gen/cmd/cgen/gen_helper.c
     capsule_name = 'KEYSERVER_' + str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + '__' + hex(
@@ -62,8 +62,8 @@ def prep_capsule(policy_file: FileStorage, attachment: FileStorage) -> str:
         os.mkdir(capsule_path)
         policy_file.save(os.path.join(capsule_path, capsule_name + '.policy'))
         policy_file.close()
-        attachment.save(os.path.join(capsule_path, capsule_name + '.data'))
-        attachment.close()
+        data_file.save(os.path.join(capsule_path, capsule_name + '.data'))
+        data_file.close()
         with open(os.path.join(capsule_path, capsule_name + '.kvstore'), 'w') as file:
             file.write('location: NSS Lab, Vancouver, BC')
             file.close()
@@ -75,11 +75,11 @@ def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
     with current_app.app_context():
 
         if 'policy' not in request.files or \
-                'attachment' not in request.files or \
+                'data' not in request.files or \
                 not allowed_file(request.files['policy'].filename):
             return jsonify({"success": False, "msg": "Invalid upload"}), HTTPStatus.BAD_REQUEST
 
-        capsule_name = prep_capsule(request.files['policy'], request.files['attachment'])
+        capsule_name = prep_capsule(request.files['policy'], request.files['data'])
         if not capsule_name:
             return jsonify({"success": False, "msg": "No lua file"}), HTTPStatus.BAD_REQUEST
 
@@ -92,7 +92,7 @@ def capsule_request(request: Request) -> Tuple[str, HTTPStatus]:
         if not ok:
             return jsonify({"success": False, "msg": "DB insert failed"}), HTTPStatus.BAD_REQUEST
 
-        capsule_url = request.url + capsule_filename  # TODO: fix to generate proper url
+        capsule_url = request.url_root + 'generated_capsules/' + capsule_filename
         return jsonify({"success": True, "url": capsule_url})
 
 
