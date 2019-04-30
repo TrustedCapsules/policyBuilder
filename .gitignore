@@ -198,3 +198,4 @@ uploads/
 db.sqlite
 scratch.py
 generated_capsules/*
+backend_tests/KEYSERVER_*
