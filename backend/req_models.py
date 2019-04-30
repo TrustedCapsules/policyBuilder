@@ -214,26 +214,18 @@ class DecryptRequest:
             print('jsonschema validation err')
             return False
 
-    # returns a file path to a generated capsule, and success bool
+    # returns decrypt key and success bool
     def get_key(self) -> Tuple[str, bool]:
         session = db.get_session()
-        capsule = session.query(db.Capsule, db.CapsuleRecipient, db.Device).filter(
-            db.Capsule.uuid == self.uuid,
-            db.Capsule.uuid == db.CapsuleRecipient.uuid,
-            db.CapsuleRecipient.email == db.Device.email,
-            db.Device.pubkey == self.pubkey,
-            db.Device.is_auth is True).first()
+        capsule = session.query(db.Capsule) \
+            .join(db.CapsuleRecipient, db.Capsule.uuid == db.CapsuleRecipient.uuid) \
+            .join(db.Device, db.CapsuleRecipient.email == db.Device.email) \
+            .filter(db.Capsule.uuid == self.uuid,
+                    db.Device.pubkey == self.pubkey,
+                    db.Device.is_auth == True).first()
+
         if capsule is None:
             session.close()
             return "", False
 
-        capsule.is_auth = True
-        try:
-            session.close()
-            return "", True
-        except Exception as e:
-            print(e)
-            session.rollback()
-            return "", False
-        finally:
-            session.close()
+        return capsule.decrypt_key, True

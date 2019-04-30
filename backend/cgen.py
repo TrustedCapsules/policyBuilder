@@ -1,4 +1,3 @@
-import datetime
 import os
 import subprocess
 from typing import Tuple
@@ -41,5 +40,5 @@ def execute_cgen(capsule_name: str, uuid: str) -> Tuple[str, bool]:
 def get_capsule_uuid(capsule_file_name: str) -> str:
     # for offsets, see https://github.com/TrustedCapsules/optee_app/blob/master/common/capsuleCommon.h
     with open(os.path.join(current_app.config['GENERATED_CAPSULES_PATH'], capsule_file_name), 'rb') as r:
-        uuid = r.read()[12:44]
-        return str(uuid)
+        uuid = r.read()[11:43]
+        return uuid.decode('ascii')
