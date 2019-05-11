@@ -11,7 +11,7 @@ A policy builder interface for Trusted Capsules. Integrates key management capab
 - Registration flow: [pdf](docs/registration_flow.pdf)
 
 ## Getting started
-1. Install [yarn](https://yarnpkg.com/en/docs/install)
+1. Install [yarn](https://yarnpkg.com/en/docs/install) and [python](https://www.anaconda.com/distribution/#download-section)
 2. From the git root, run
 ```bash
 yarn install #get React (for drag and drop), webpack (for library bundling), dependencies
@@ -26,14 +26,15 @@ Nonce flow:
 - Client sends dec_nonce = hex(decrypt(fromhex(enc_nonce)))
 - Server validates this in db
 
-Open your web browser to http://localhost:5000/
+Open your web browser to http://localhost:5000/ for policy creation
 
 ### Notes
 #### Frontend
 Built with:
-- react (for abstraction of components)
-- typescript (for type sanity)
-- webpack (for js import support in the browser)
+- [react](https://reactjs.org/) (for abstraction of components)
+- [typescript](https://www.typescriptlang.org/) (for type sanity)
+- [webpack](https://webpack.js.org/) (for js import support in the browser)
+- [webpack-dev-server](https://webpack.js.org/configuration/dev-server/) (for auto refresh when doing front end dev work)
 - [react-fontawesome](https://github.com/FortAwesome/react-fontawesome) (for nice icons)
 - [superagent](https://github.com/visionmedia/superagent) (for post request and attachment handling)
 - [react-dropzone](https://github.com/react-dropzone/react-dropzone) (for drag and drop files)
