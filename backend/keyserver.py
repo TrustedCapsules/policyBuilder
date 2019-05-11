@@ -16,7 +16,7 @@ app.config['UPLOADED_LUA_PATH'] = 'uploads'
 
 @app.route('/dist/<path:filename>')
 def send_js(filename):
-    return send_from_directory('dist', filename)
+    return send_from_directory('../dist', filename)
 
 
 @app.route('/generated_capsules/<path:filename>')
@@ -78,4 +78,4 @@ def init_db():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port=5000)
