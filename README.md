@@ -6,18 +6,17 @@ A policy builder interface for Trusted Capsules
 - yarn
 - capsule_gen
 
-## Getting started
-Install [yarn](https://yarnpkg.com/en/docs/install)
-From the git root, run
-```bash
-#frontend stuff
-yarn install #get React (for drag and drop), webpack (for library bundling), babel (browser compatible)
-yarn build #runs webpack and typescript transpiler
+## Background:
+Slides: https://docs.google.com/presentation/d/1h1r1BICwu2tbnsBMdahuZV4tx1Q5xVw0yfxkWo3Eexw/edit#slide=id.g592028f938_0_86
 
-#backend stuff
+## Getting started
+1. Install [yarn](https://yarnpkg.com/en/docs/install)
+2. From the git root, run
+```bash
+yarn install #get React (for drag and drop), webpack (for library bundling), dependencies
 pip3 install requirements.txt --user
-python3 server.py #runs the backend
 ```
+3. Run webpack, typescript transpiler and python server with `yarn start`
 
 Nonce flow:
 - Server gets registration request
@@ -37,4 +36,6 @@ Built with:
 
 ### Backend
 Built with: 
-- Flask
+- Flask (web server)
+- SQLite (persistent store)
+- SqlAlchemy (ORM for easy data marshalling)
