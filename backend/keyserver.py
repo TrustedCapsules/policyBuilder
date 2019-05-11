@@ -7,7 +7,7 @@ import req_handler
 
 app = Flask(__name__)
 app.config['DATABASE'] = 'db.sqlite'
-app.config['TESTING'] = True  # FIXME make false
+app.config['TESTING'] = True  # TODO: make false for prod
 app.config['CGEN_PATH'] = 'backend'
 app.config['CAPSULE_TEMP_WORK_PATH'] = '/tmp/keyserver'
 app.config['GENERATED_CAPSULES_PATH'] = 'generated_capsules'
@@ -48,7 +48,7 @@ def verify():
 
 
 # input: multipart/form request in format of
-# {"email1": "a@a.com", "email2": "b@b.com", "inviteRecipients": "true", "file.lua": "contents"}
+# {"email1": "a@a.com", "email2": "b@b.com", "inviteRecipients": "true", "policy": "LUA_STUFF", "file": "FILE STUFF"}
 # response: json in format of {success: true, "url": "SERVER_IP:PORT/capsules/capsule1.cap"}
 # sends an email with invitation
 @app.route('/capsule', methods=['POST'])
@@ -56,7 +56,7 @@ def capsule():
     return req_handler.capsule_request(request)
 
 
-# input: multipart/form request in format of
+# input: application/json request in format of
 # {"uuid": "32CHAR_HEX_UUID", "pubkey": "EXAMPLE_PUBKEY"}
 # response: json in format of {success: true, "key": "DECRYPT_KEY"}
 @app.route('/decrypt', methods=['POST'])
