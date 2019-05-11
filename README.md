@@ -1,13 +1,14 @@
 # policyBuilder
-A policy builder interface for Trusted Capsules
+A policy builder interface for Trusted Capsules. Integrates key management capabilities
 
 ## Requirements:
 - python 3.6+
 - yarn
-- capsule_gen
+- capsule_gen (bundled for Linux x86-64, for other platforms please recompile)
 
 ## Background:
-Slides: https://docs.google.com/presentation/d/1h1r1BICwu2tbnsBMdahuZV4tx1Q5xVw0yfxkWo3Eexw/edit#slide=id.g592028f938_0_86
+- Slides: https://docs.google.com/presentation/d/1h1r1BICwu2tbnsBMdahuZV4tx1Q5xVw0yfxkWo3Eexw/edit#slide=id.g592028f938_0_86
+- Registration flow: [pdf](docs/registration_flow.pdf)
 
 ## Getting started
 1. Install [yarn](https://yarnpkg.com/en/docs/install)
@@ -30,12 +31,19 @@ Open your web browser to http://localhost:5000/
 ### Notes
 #### Frontend
 Built with:
-- react
-- typescript
-- [react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd)
+- react (for abstraction of components)
+- typescript (for type sanity)
+- webpack (for js import support in the browser)
+- [react-fontawesome](https://github.com/FortAwesome/react-fontawesome) (for nice icons)
+- [superagent](https://github.com/visionmedia/superagent) (for post request and attachment handling)
+- [react-dropzone](https://github.com/react-dropzone/react-dropzone) (for drag and drop files)
+- [react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd) (not used currently)
 
 ### Backend
 Built with: 
-- Flask (web server)
-- SQLite (persistent store)
-- SqlAlchemy (ORM for easy data marshalling)
+- flask (web server)
+- sqlite (persistent store)
+- sqlalchemy (ORM for easy data marshalling)
+- pytest (for unit tests)
+- jsonschema (validate client requests)
+- pycryptodomex (key generation and encrypt/decrypt tasks)
