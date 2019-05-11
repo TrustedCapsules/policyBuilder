@@ -41,7 +41,7 @@ def register():
 
 
 # input: application/json of {"email": "a@a.com", "pubkey": "EXAMPLE_PUBKEY", "nonce": "DECRYPTED_NONCE_IN_HEX"}
-# response: json in format of {success: true, "msg": ""}
+# response: json in format of {success: true, "msg": "ERROR_MSG_OR_BLANK_FOR_SUCCESS"}
 @app.route('/verify', methods=['POST'])
 def verify():
     return req_handler.verify_request(request)
@@ -79,3 +79,6 @@ def init_db():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
+    # for ssl
+    # context = ('cert.crt', 'key.key')
+    # app.run(host='0.0.0.0', port=80, ssl_context=context, threaded=True, debug=True)
