@@ -21,7 +21,7 @@ function CapsuleForm() {
     const [data, setData] = React.useState(null);
 
     const formSubmit = React.useCallback(() => {
-        const req = superagent.post('http://127.0.0.1:5001/capsule')
+        const req = superagent.post('http://127.0.0.1:5000/capsule')
             .field({email1})
             .field({email2})
             .field({inviteRecipients});

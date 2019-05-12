@@ -87,7 +87,7 @@ def init_db() -> None:
         Base.metadata.create_all(get_engine())  # generate the tables
 
 
-# forces fk to work (default is off)
+# forces foreign key to work (default is off)
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record) -> None:
     cursor = dbapi_connection.cursor()

@@ -14,7 +14,7 @@ A policy builder interface for Trusted Capsules. Integrates key management capab
 1. Install [yarn](https://yarnpkg.com/en/docs/install) and [python](https://www.anaconda.com/distribution/#download-section)
 2. From the git root, run
 ```bash
-yarn install #get React (for drag and drop), webpack (for library bundling), dependencies
+yarn install
 pip3 install requirements.txt --user
 ```
 3. Run webpack, typescript transpiler and python server with `yarn start`
