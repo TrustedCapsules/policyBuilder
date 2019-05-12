@@ -176,6 +176,8 @@ class CapsuleRequest:
             session.add_all([cap, recip1, recip2])
             try:
                 session.commit()
+                #TODO: email uninvited recipients
+                #mail.send_invite(recipient_email: str)
                 return out_file_name, True
             except Exception as e:
                 print(e)
