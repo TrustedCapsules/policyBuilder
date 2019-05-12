@@ -1,8 +1,8 @@
 {
-  "name": "tc_polGen",
+  "name": "keyserver",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "git@github.com:TrustedCapsules/policyBuilder.git",
+  "repository": "git@github.com:TrustedCapsules/keyserver.git",
   "author": "Eric Semeniuc <eric.semeniuc@alumni.ubc.ca>",
   "license": "MIT",
   "devDependencies": {

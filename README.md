@@ -1,4 +1,4 @@
-# policyBuilder
+# keyserver
 A policy builder interface for Trusted Capsules. Integrates key management capabilities
 
 ## Requirements:
@@ -26,7 +26,7 @@ Nonce flow:
 - Client sends dec_nonce = hex(decrypt(fromhex(enc_nonce)))
 - Server validates this in db
 
-Open your web browser to http://localhost:5000/ for policy creation
+Open your web browser to http://localhost:5000/ for capsule creation
 
 ### Notes
 #### Frontend
