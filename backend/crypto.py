@@ -15,13 +15,3 @@ def decrypt_rsa(encrypted_msg: bytes, priv_key: str) -> bytes:
     cipher_rsa = PKCS1_OAEP.new(private_key)
     return cipher_rsa.decrypt(encrypted_msg)
 
-
-def demo():
-    pubkey = open("/home/eric/.ssh/id_rsa.pub", "r").read()
-    msg = "I met aliens in UFO. Here is the map.".encode("utf-8")
-    encrypted = encrypt_rsa(msg, pubkey)
-    print(encrypted)
-
-    privkey = open("/home/eric/.ssh/id_rsa", "r").read()
-    decrypted = decrypt_rsa(encrypted, privkey)
-    print(decrypted)

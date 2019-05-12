@@ -27,7 +27,7 @@ def test_register_request(client):
         assert test_session.query(db.Device).count() == 0
         test_session.close()
         resp = client.post('/register', json={"email": "bob@email.com",
-                                              "pubkey": open("backend_tests/demo_rsakey.pub", "r").read()})
+                                              "pubkey": open("backend_tests/demo_rsakey_pem.pub", "r").read()})
 
         test_session = db.get_session()
         assert resp.status_code == 200
